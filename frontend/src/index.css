@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "@flaticon/flaticon-uicons/css/all/all";
+
+::-webkit-scrollbar {
+  display: none;
+}
+/* google fonts sanss serif */
