@@ -4,24 +4,15 @@ import avatar_icon from '../assets/avatar.png'
 import { AuthContext } from '../../context/AuthContext';
 
 const ProfilePage = () => {
+  const { authUser, updateProfile } = useContext(AuthContext);
   const [selectedImage, setSelectedImage] = React.useState(null);
   const navigate = useNavigate();
-  const { authUser, updateProfile } = useContext(AuthContext);
-
   const [formData, setFormData] = React.useState({
     name: authUser?.fullName || '',
     bio: authUser?.bio || '',
   });
 
-  // Update form data when authUser changes
-  React.useEffect(() => {
-    if (authUser) {
-      setFormData({
-        name: authUser.fullName || '',
-        bio: authUser.bio || '',
-      });
-    }
-  }, [authUser]);
+
 
   const handleChange = (e) => {
     setFormData({
@@ -32,43 +23,30 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      let result;
-      
-      if (!selectedImage) {
-        result = await updateProfile({
+    // Handle form submission logic here
+    if (!selectedImage) {
+      await updateProfile({
+        fullName: formData.name,
+        bio: formData.bio,
+      });
+      navigate('/');
+      return;
+    }
+    else {
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedImage);
+      reader.onload = async () => {
+        const base64Image = reader.result;
+        await updateProfile({
           fullName: formData.name,
           bio: formData.bio,
+          profilePic: base64Image,
         });
-      } else {
-        const reader = new FileReader();
-        reader.readAsDataURL(selectedImage);
-        reader.onload = async () => {
-          const base64Image = reader.result;
-          result = await updateProfile({
-            fullName: formData.name,
-            bio: formData.bio,
-            profilePic: base64Image,
-          });
-          
-          if (result?.success) {
-            navigate('/');
-          }
-          setIsLoading(false);
-        };
-        return; // Exit early for image upload case
-      }
-      
-      if (result?.success) {
         navigate('/');
       }
-    } catch (error) {
-      console.error('Profile update error:', error);
-    } finally {
-      setIsLoading(false);
+
     }
+    console.log('Form Data:', formData);
   }
 
   return (
@@ -83,15 +61,8 @@ const ProfilePage = () => {
                 setSelectedImage(e.target.files[0]);
               }} />
             <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-gray-600 flex-shrink-0'>
-              <img 
-                src={
-                  selectedImage 
-                    ? URL.createObjectURL(selectedImage) 
-                    : authUser?.profilePic || avatar_icon
-                } 
-                alt="Profile" 
-                className='w-full h-full object-cover' 
-              />
+              <img src={selectedImage ? URL.createObjectURL(selectedImage) : avatar_icon} alt=""
+                className='w-full h-full object-cover' />
             </div>
             <span className='text-sm text-gray-300 hover:text-white transition-colors'>
               Upload profile image
@@ -107,21 +78,10 @@ const ProfilePage = () => {
 
 
           <div className='flex items-center gap-5'>
-            <button 
-              type='submit' 
-              disabled={isLoading}
-              className={`bg-gradient-to-r from-purple-400 to-violet-600 text-white text-sm px-5 py-2 rounded-full cursor-pointer transition-opacity ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:from-purple-500 hover:to-violet-700'
-              }`}
-            >
-              {isLoading ? 'Saving...' : 'Save'}
+            <button type='submit' className='bg-gradient-to-r from-purple-400 to-violet-600 text-white text-sm px-5 py-2 rounded-full cursor-pointer'>
+              Save
             </button>
-            <button 
-              type='button' 
-              onClick={() => navigate(-1)} 
-              disabled={isLoading}
-              className='text-sm px-5 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors disabled:opacity-50'
-            >
+            <button type='button' onClick={() => navigate(-1)} className='text-sm px-5 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors'>
               Cancel
             </button>
           </div>
