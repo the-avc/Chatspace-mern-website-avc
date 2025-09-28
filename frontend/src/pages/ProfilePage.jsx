@@ -12,8 +12,6 @@ const ProfilePage = () => {
     bio: authUser?.bio || '',
   });
 
-
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -30,9 +28,12 @@ const ProfilePage = () => {
         bio: formData.bio,
       });
       navigate('/');
+      console.log('No image selected');
+
       return;
     }
     else {
+      console.log('Image selected:', selectedImage);
       const reader = new FileReader();
       reader.readAsDataURL(selectedImage);
       reader.onload = async () => {
@@ -60,9 +61,10 @@ const ProfilePage = () => {
               hidden onChange={(e) => {
                 setSelectedImage(e.target.files[0]);
               }} />
-            <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-gray-600 flex-shrink-0'>
-              <img src={selectedImage ? URL.createObjectURL(selectedImage) : avatar_icon} alt=""
-                className='w-full h-full object-cover' />
+            <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-gray-600 flex-shrink-0 bg-gray-700 flex items-center justify-center'>
+              <img src={selectedImage ? URL.createObjectURL(selectedImage) : authUser?.profilePic || avatar_icon} alt=""
+                className='w-full h-full object-cover'
+                onError={(e) => e.target.src = avatar_icon} />
             </div>
             <span className='text-sm text-gray-300 hover:text-white transition-colors'>
               Upload profile image
