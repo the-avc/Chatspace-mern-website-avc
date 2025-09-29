@@ -1,12 +1,32 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { userDummyData } from '../assets/assets';
+import { assets, userDummyData } from '../assets/assets';
+import { AuthContext } from '../../context/AuthContext';
+import { ChatContext } from '../../context/ChatContext';
 
 
-const Sidebar = ({ selectedUser, setSelectedUser }) => {
+const Sidebar = () => {
+    const { selectedUser, users, getUsers, setSelectedUser, unseenMessages, setUnseenMessages } = useContext(ChatContext);
+
     const [hide, setHide] = React.useState(false);
+    const { logout, onlineUsers } = useContext(AuthContext);
+
+    const [searchTerm, setSearchTerm] = React.useState("");
+
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
+
+    const filteredUsers = searchTerm
+        ? users.filter(user =>
+            user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        : users;
+
+
+    useEffect(() => {
+        getUsers();
+    }, [onlineUsers]);
+
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -41,7 +61,9 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
                                 onClick={() => navigate('/profile')}
                             >Edit Profile</p>
                             <hr className='my-1 border-gray-600' />
-                            <p className='cursor-pointer text-xs py-1 hover:text-red-400 transition-colors'>Logout</p>
+                            <p className='cursor-pointer text-xs py-1 hover:text-red-400 transition-colors'
+                                onClick={() => logout()}
+                            >Logout</p>
                         </div>
                     </div>
                 </div>
@@ -53,13 +75,14 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
                         type="text"
                         placeholder='Search User...'
                         className='w-full bg-gray-800/50 rounded-full py-2 pl-8 pr-3 text-xs placeholder:text-gray-400 border border-gray-700/50 focus:outline-none focus:border-blue-500/50 transition-colors'
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
             </div>
 
             {/* Users List */}
             <div className='flex flex-col overflow-y-auto h-[calc(100%-120px)]'>
-                {userDummyData.map((user, index) => (
+                {filteredUsers.map((user, index) => (
                     <div
                         onClick={() => { setSelectedUser(user) }}
                         key={index}
