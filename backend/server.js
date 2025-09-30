@@ -29,16 +29,16 @@ io.on("connection", (socket) => {
     if (userId) {
         userSocketMap.set(userId, socket.id);
     }
-    //emit event to all connected users
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    //emit event to all connected users (convert Map keys to array)
+    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
 
     socket.on("disconnect", () => {
         console.log("User disconnected with ID:", userId);
         if (userId) {
             userSocketMap.delete(userId);
         }
-        //emit event to all connected users
-        io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    //emit event to all connected users (convert Map keys to array)
+    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
     });
 });
 

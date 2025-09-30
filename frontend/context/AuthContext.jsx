@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
         setOnlineUsers([]);
         axios.defaults.headers.common["Authorization"] = null;
         toast.success("Logged out successfully");
-        socket.disconnect();
+        if (socket && socket.disconnect) socket.disconnect();
         setSocket(null);
     }
 
@@ -99,7 +99,24 @@ export const AuthProvider = ({ children }) => {
         setSocket(newSocket);
 
         newSocket.on("getOnlineUsers", (userIds) => {
-            setOnlineUsers(userIds);
+            // server should emit an array of userIds; coerce and log for debugging
+            console.debug("getOnlineUsers payload:", userIds);
+            if (Array.isArray(userIds)) {
+                setOnlineUsers(userIds);
+            } else if (userIds && typeof userIds === 'object') {
+                // if server accidentally sends an object, try to extract keys
+                try {
+                    setOnlineUsers(Array.from(Object.keys(userIds)));
+                } catch (e) {
+                    setOnlineUsers([]);
+                }
+            } else {
+                setOnlineUsers([]);
+            }
+        });
+
+        newSocket.on('connect_error', (err) => {
+            console.error('Socket connect error', err);
         });
     }
 
