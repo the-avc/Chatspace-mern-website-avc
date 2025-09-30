@@ -74,7 +74,7 @@ export const updateProfile = async (req, res) => {
                     updatedUser = await User.findByIdAndUpdate(
                         userId, 
                         { fullName, bio, profilePic: result.secure_url }, 
-                        { new: true }
+                        { new: true } //new : return the updated document
                     );
                     
                     res.status(200).json({ 
