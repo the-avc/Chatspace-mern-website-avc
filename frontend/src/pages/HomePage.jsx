@@ -13,7 +13,8 @@ const HomePage = () => {
 
                 <Sidebar />
                 <ChatContainer />
-                {/* no need of right sidebar for now */}
+                {/* no need of right sidebar for now 
+                add [1fr_1.5fr_1fr] in grid-cols*/}
                 {/* <RightSidebar /> */}
             </div>
         </div>

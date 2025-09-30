@@ -100,7 +100,9 @@ const ChatContainer = () => {
 
               <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
                 {msg.image && (
-                  <img src={msg.image} alt="" className='max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-2' />
+                  <img src={msg.image} alt="" className='max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-2 cursor-pointer' 
+                  onClick={() => window.open(msg.image)}
+                  />
                 )}
                 {msg.text && (
                   <div className={`max-w-[280px] p-3 rounded-2xl text-sm ${isCurrentUser

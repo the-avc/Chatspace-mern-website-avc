@@ -20,7 +20,7 @@ const RightSidebar = () => {
 
   return selectedUser && (
     <div className={`bg-black/30 backdrop-blur-sm h-full overflow-y-auto text-white ${selectedUser ? "max-md:hidden" : "hidden"}`}>
-      {/* Profile Section */}
+      {/* -------------Profile Section------------------------------------ */}
       <div className='flex flex-col items-center p-4 text-center border-b border-gray-700/30'>
         <img src={selectedUser?.profilePic || assets.avatar_icon} alt=""
           className='w-16 h-16 rounded-full object-cover border-2 border-gray-600' />
@@ -33,7 +33,7 @@ const RightSidebar = () => {
         </p>
       </div>
 
-      {/* Media Section */}
+      {/*----------------------------- Media Section----------------------- */}
       <div className='p-4'>
         <div className='flex items-center justify-between mb-3'>
           <h3 className='text-white text-sm font-medium'>Media</h3>
