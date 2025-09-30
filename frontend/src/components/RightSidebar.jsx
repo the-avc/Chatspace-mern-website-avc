@@ -29,7 +29,7 @@ const RightSidebar = () => {
           {selectedUser?.fullName}
         </h2>
         <p className='text-gray-400 text-xs mt-1 px-2 leading-relaxed'>
-          {selectedUser?.bio || "Hey there! I am using QuickChat."}
+          {selectedUser?.bio || "Hey there! I am using Chatspace."}
         </p>
       </div>
 
