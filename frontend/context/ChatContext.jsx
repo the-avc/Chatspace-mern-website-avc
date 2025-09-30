@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
 import toast from "react-hot-toast";
+import { askAI } from "../src/lib/ai";
 
 export const ChatContext = createContext(null);
 

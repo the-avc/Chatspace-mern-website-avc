@@ -4,13 +4,14 @@ import help_icon from '../assets/help.png'
 import avatar_icon from '../assets/avatar.png'
 import profile_alison from '../assets/profile_alison.avif';
 import { formatTimestamp } from '../lib/utils';
+import { askAI } from '../lib/ai.js';
 import { ChatContext } from '../../context/ChatContext';
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const ChatContainer = () => {
-  const { messages, selectedUser, setSelectedUser, sendMessage, getMessages } = useContext(ChatContext);
-  const { authUser, onlineUsers } = useContext(AuthContext);
+  const { messages, selectedUser, setSelectedUser, sendMessage, getMessages, setMessages } = useContext(ChatContext);
+  const { authUser, onlineUsers, axios } = useContext(AuthContext);
 
   const [input, setInput] = useState("");
 
@@ -29,7 +30,22 @@ const ChatContainer = () => {
       return;
     }
 
-    await sendMessage({ text: input.trim() });
+    const text = input.trim();
+    if (selectedUser?._id === 'ai-assistant') {
+      // local echo then ask AI
+      const now = new Date().toISOString();
+      setMessages(prev => [...prev, { _id: `${Date.now()}-me`, senderId: authUser._id, receiverId: 'ai-assistant', text, createdAt: now, seen: true }]);
+      setInput("");
+      try {
+        const res = await askAI(axios, { prompt: text });
+        const reply = res?.content || res?.message?.content || '';
+        setMessages(prev => [...prev, { _id: `${Date.now()}-ai`, senderId: 'ai-assistant', receiverId: authUser._id, text: reply, createdAt: new Date().toISOString(), seen: true }]);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || err.message || 'AI Error');
+      }
+      return;
+    }
+    await sendMessage({ text });
     setInput("");
   }
 
@@ -50,9 +66,12 @@ const ChatContainer = () => {
   }
 
   useEffect(() => {
-    if (selectedUser) {
-      getMessages(selectedUser._id);
+    if (!selectedUser) return;
+    if (selectedUser?.isAI || selectedUser?._id === 'ai-assistant') {
+      setMessages([]);
+      return;
     }
+    getMessages(selectedUser._id);
   }, [selectedUser]);
 
   useEffect(() => {

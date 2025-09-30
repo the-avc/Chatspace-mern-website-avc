@@ -5,6 +5,7 @@ import http from 'http';
 import { connectDB } from './lib/db.js';
 import userRouter from './routes/user-routes.js';
 import messageRouter from './routes/messages-routes.js';
+import aiRouter from "./routes/ai-routes.js";
 import { Server } from 'socket.io';
 
 dotenv.config();
@@ -50,6 +51,8 @@ app.use(cors());
 app.use("/api/status", (req, res) => res.send("Server is running"));
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
+
+app.use("/api/ai", aiRouter);
 
 connectDB();
 
