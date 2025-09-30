@@ -5,8 +5,8 @@ import { verifyToken } from "../middlewares/auth.js";
 const router = Router();
 router.get("/users", verifyToken, getUsersForSidebar);
 router.get("/:userId", verifyToken, getAllMessages);
-router.patch("/seen/:userId", verifyToken, makeMsgSeen);
+router.put("/seen/:msgId", verifyToken, makeMsgSeen);
 
-router.post("/send", verifyToken, sendMessage);
+router.post("/send/:userId", verifyToken, sendMessage);
 
 export default router;

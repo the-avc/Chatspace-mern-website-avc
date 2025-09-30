@@ -28,10 +28,10 @@ export const getUsersForSidebar = async (req, res) => {
             return unseenCount;
         });
         const usersWithUnseen = await Promise.all(unseen);
-        res.status(200).json({ users: filteredUsers, unseenMsgs });
+        res.status(200).json({ success: true, users: filteredUsers, unseenMsgs });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Server Error", error });//500 means server error
+        res.status(500).json({ success: false, message: "Server Error", error });//500 means server error
     }
 }
 
@@ -56,11 +56,10 @@ export const getAllMessages = async (req, res) => {
         }, {
             $set: { seen: true }
         })
-        res.status(200).json(messages);
-
+        res.status(200).json({success:true, messages});
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Server Error", error });//500 means server error
+        res.status(500).json({success:false, message: "Server Error", error });//500 means server error
     }
 }
 
@@ -69,10 +68,10 @@ export const makeMsgSeen = async (req, res) => {
     try {
         const msgId = req.params.msgId;
         await Message.findByIdAndUpdate(msgId, { seen: true });
-        res.status(200).json({ message: "Message marked as seen" });
+        res.status(200).json({ success:true,message: "Message marked as seen" });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Server Error", error });//500 means server error
+        res.status(500).json({success:false, message: "Server Error", error });//500 means server error
     }
 }
 
@@ -99,9 +98,9 @@ export const sendMessage = async (req, res) => {
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage", newMessage);
         }
-        res.status(201).json(newMessage);
+        res.status(201).json({success:true,newMessage});
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Server Error", error });//500 means server error
+        res.status(500).json({ success:false,message: "Server Error", error });//500 means server error
     }
 }

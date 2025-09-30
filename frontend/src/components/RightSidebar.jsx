@@ -1,16 +1,31 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import avatar_icon from '../assets/avatar.png'
-import { imagesDummyData } from '../assets/assets'
+import { assets, imagesDummyData } from '../assets/assets'
+import { ChatContext } from '../../context/ChatContext'
+import { AuthContext } from '../../context/AuthContext'
 
-const RightSidebar = ({ selectedUser }) => {
+const RightSidebar = () => {
+
+  const {selectedUser, messages} = useContext(ChatContext)
+  const {logout, onlineUsers} = useContext(AuthContext);
+  const [msgImages, setMsgImages] = React.useState([]);
+
+  //get all images from messages
+  useEffect(() => {
+    if(messages && messages.length > 0){
+      const imgs = messages.filter(msg => msg.image).map(msg => msg.image);
+      setMsgImages(imgs); 
+    }
+  }, [messages]);
+
   return selectedUser && (
     <div className={`bg-black/30 backdrop-blur-sm h-full overflow-y-auto text-white ${selectedUser ? "max-md:hidden" : "hidden"}`}>
       {/* Profile Section */}
       <div className='flex flex-col items-center p-4 text-center border-b border-gray-700/30'>
-        <img src={selectedUser?.profilePic || avatar_icon} alt=""
+        <img src={selectedUser?.profilePic || assets.avatar_icon} alt=""
           className='w-16 h-16 rounded-full object-cover border-2 border-gray-600' />
         <h2 className='text-white text-lg font-medium mt-3 flex items-center justify-center gap-2'>
-          <span className='w-2 h-2 rounded-full bg-green-500'></span>
+          {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
           {selectedUser?.fullName}
         </h2>
         <p className='text-gray-400 text-xs mt-1 px-2 leading-relaxed'>
@@ -26,7 +41,7 @@ const RightSidebar = ({ selectedUser }) => {
         </div>
         
         <div className="grid grid-cols-3 gap-2 max-h-[180px] overflow-y-auto">
-          {imagesDummyData.map((img, index) => (
+          {msgImages.map((img, index) => (
             <div key={index} onClick={() => window.open(img)}
               className='relative cursor-pointer group overflow-hidden rounded-lg bg-gray-800/50'>
               <img 
@@ -50,7 +65,8 @@ const RightSidebar = ({ selectedUser }) => {
             <span className='text-sm text-red-400'>Delete conversation</span>
           </div>
 
-          <button className='absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-400 to-violet-600 text-white text-sm px-20 py-2 rounded-full cursor-pointer'>
+          <button className='absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-400 to-violet-600 text-white text-sm px-20 py-2 rounded-full cursor-pointer'
+          onClick={logout}>
             Logout
           </button>
         </div>
