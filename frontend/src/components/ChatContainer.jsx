@@ -1,8 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { assets } from '../assets/assets';
-import help_icon from '../assets/help.png'
-import avatar_icon from '../assets/avatar.png'
-import profile_alison from '../assets/profile_alison.avif';
 import { formatTimestamp } from '../lib/utils';
 import { ChatContext } from '../../context/ChatContext';
 import { AuthContext } from '../../context/AuthContext';
