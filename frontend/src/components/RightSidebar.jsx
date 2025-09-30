@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react'
 import avatar_icon from '../assets/avatar.png'
-import { assets, imagesDummyData } from '../assets/assets'
+import { assets } from '../assets/assets'
 import { ChatContext } from '../../context/ChatContext'
 import { AuthContext } from '../../context/AuthContext'
 

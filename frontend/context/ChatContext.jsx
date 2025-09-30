@@ -6,10 +6,10 @@ export const ChatContext = createContext(null);
 
 export const ChatProvider = ({ children }) => {
 
-    const [messages, setMessages] = useState([]);
-    const [users, setUsers] = useState([]);
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [unseenMessages, setUnseenMessages] = useState({});
+    const [messages, setMessages] = useState([]); //all messages with selected user
+    const [users, setUsers] = useState([]); //all users except logged in user
+    const [selectedUser, setSelectedUser] = useState(null); //this user is the one we are chatting with
+    const [unseenMessages, setUnseenMessages] = useState({}); //object with userId as key and number of unseen msgs as value
 
     const { socket, axios } = useContext(AuthContext);
 
@@ -55,7 +55,7 @@ export const ChatProvider = ({ children }) => {
         }
     }
 
-    //socket io event listeners
+    //socket io event listeners -- this means subscribe to socket io events i.e. listen for events
     const subscribeToMessages = async () => {
         if (!socket) return;
 
@@ -80,7 +80,7 @@ export const ChatProvider = ({ children }) => {
     //func to unsubscribe from socket io events
     const unsubscribeFromMessages = () => {
         if (!socket) return;
-        socket.off("newMessage");
+        socket.off("newMessage"); //this means remove the listener for newMessage event
     }
 
     useEffect(() => {

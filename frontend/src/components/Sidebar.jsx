@@ -7,7 +7,7 @@ import { ChatContext } from '../../context/ChatContext';
 
 const Sidebar = () => {
     const { selectedUser, users, getUsers, setSelectedUser, unseenMessages, setUnseenMessages } = useContext(ChatContext);
-
+    const { authUser } = useContext(AuthContext);
     const [hide, setHide] = React.useState(false);
     const { logout, onlineUsers } = useContext(AuthContext);
 
@@ -43,23 +43,27 @@ const Sidebar = () => {
     }, []);
     return (
         <div className={`bg-black/30 backdrop-blur-sm h-full overflow-hidden text-white ${selectedUser ? "max-md:hidden" : ""}`}>
-            {/* Header Section */}
+            {/*------------------------- Header Section -----------------------------------------------*/}
             <div className='p-3 border-b border-gray-700/50'>
                 <div className='flex justify-between items-center mb-3'>
                     <div className='flex items-center gap-2'>
-                        <div className='w-6 h-6 bg-blue-500 rounded-md flex items-center justify-center'>
-                            <i className="fi fi-brands-rocketchat text-white text-xs"></i>
-                        </div>
-                        <span className='text-sm font-semibold'>LOGO</span>
+
+                        <img src={assets.logo} alt="" className='w-45 rounded-md flex items-center justify-center' />
+
+                        {/* <span className='text-sm font-semibold'>Chatspace</span> */}
+
                     </div>
                     <div className='relative' ref={dropdownRef}>
-                        <i className="fi fi-rr-menu-dots-vertical text-lg cursor-pointer hover:text-blue-400 transition-colors"
-                            onClick={() => setHide(!hide)} />
+                        {/* user profile image and dropdown */}
+                        <img src={authUser?.profilePic || assets.avatar_icon} alt="" className='w-8 h-8 rounded-full object-cover cursor-pointer border border-gray-600'
+                            onClick={() => setHide(!hide)}
+                        />
+
                         <div className={`absolute top-full right-0 z-20 w-28 p-2 rounded-lg bg-gray-800/90 backdrop-blur-sm border border-gray-600 text-gray-100 shadow-lg ${hide ? 'block' : 'hidden'}`}
                         >
                             <p className='cursor-pointer text-xs py-1 hover:text-blue-400 transition-colors'
                                 onClick={() => navigate('/profile')}
-                            >Edit Profile</p>
+                            >Edit Profile : {authUser.fullName}</p>
                             <hr className='my-1 border-gray-600' />
                             <p className='cursor-pointer text-xs py-1 hover:text-red-400 transition-colors'
                                 onClick={() => logout()}
@@ -68,7 +72,7 @@ const Sidebar = () => {
                     </div>
                 </div>
 
-                {/* Search Bar */}
+                {/*-------------------------- Search Bar-------------------------------------------------- */}
                 <div className='relative'>
                     <i className="fi fi-rr-search absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
                     <input

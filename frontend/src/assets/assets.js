@@ -3,9 +3,9 @@ import img1 from './anime3.jpeg';
 import img2 from './anime2.gif';
 import img3 from './anime1.jpeg';
 import img4 from './anime4.png';
-import img5 from './anime5.gif';
-import img6 from './anime7.gif';
+import img5 from './anime5.webp';
 import avatar_icon from './avatar.png';
+import logo from './logo.png';
 export const assets = {
     profile_alison,
     img1,
@@ -13,18 +13,9 @@ export const assets = {
     img3,
     img4,
     img5,
-    img6,
     avatar_icon,
+    logo,
 }
-
-export const imagesDummyData = [
-    img1,
-    img2,
-    img3,
-    img4,
-    img5,
-    img6,
-]
 
 export const userDummyData = [
     {

@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { assets, messagesDummyData } from '../assets/assets';
+import { assets } from '../assets/assets';
 import help_icon from '../assets/help.png'
 import avatar_icon from '../assets/avatar.png'
 import profile_alison from '../assets/profile_alison.avif';
@@ -9,8 +9,8 @@ import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const ChatContainer = () => {
-  const {messages, selectedUser, setSelectedUser, sendMessage, getMessages} = useContext(ChatContext);
-  const {authUser, onlineUsers} = useContext(AuthContext);
+  const { messages, selectedUser, setSelectedUser, sendMessage, getMessages } = useContext(ChatContext);
+  const { authUser, onlineUsers } = useContext(AuthContext);
 
   const [input, setInput] = useState("");
 
@@ -19,27 +19,27 @@ const ChatContainer = () => {
   //   scrollEnd.current?.scrollIntoView({ behavior: "smooth" });
   // }, [selectedUser]);
 
-// handle send message
+  // handle send message
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!selectedUser) return;
-    
+
     if (input.trim().length === 0) {
       toast.error("Please enter a message");
       return;
     }
-    
-    await sendMessage({ text: input.trim()});
+
+    await sendMessage({ text: input.trim() });
     setInput("");
   }
 
   //handle sending an image
   const handleSendImage = async (e) => {
     const file = e.target.files[0];
-    if (!file || !selectedUser || !file.type.startsWith("image/")){
+    if (!file || !selectedUser || !file.type.startsWith("image/")) {
       toast.error("Please select a valid image file");
       return;
-    } 
+    }
 
     const reader = new FileReader();
     reader.onloadend = async () => {
@@ -49,8 +49,8 @@ const ChatContainer = () => {
     reader.readAsDataURL(file);
   }
 
-  useEffect(()=>{
-    if(selectedUser){
+  useEffect(() => {
+    if (selectedUser) {
       getMessages(selectedUser._id);
     }
   }, [selectedUser]);
@@ -100,8 +100,8 @@ const ChatContainer = () => {
 
               <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
                 {msg.image && (
-                  <img src={msg.image} alt="" className='max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-2 cursor-pointer' 
-                  onClick={() => window.open(msg.image)}
+                  <img src={msg.image} alt="" className='max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-2 cursor-pointer'
+                    onClick={() => window.open(msg.image)}
                   />
                 )}
                 {msg.text && (
@@ -138,8 +138,8 @@ const ChatContainer = () => {
             className='flex-1 text-sm p-3 border-none rounded-lg outline-none text-white placeholder-gray-400'
             onChange={(e) => setInput(e.target.value)}
             value={input}
-            onKeyDown={(e)=>{
-              e.key ==="Enter" && handleSendMessage(e);
+            onKeyDown={(e) => {
+              e.key === "Enter" && handleSendMessage(e);
             }}
           />
           <input type="file" id="image" accept='image/png, image/jpeg' hidden
@@ -161,9 +161,10 @@ const ChatContainer = () => {
   ) :
     (
       <div className='h-full flex flex-col justify-center items-center gap-5 text-white text-center px-5'>
-        <i className="fi fi-brands-wepik text-2xl"> LOGO</i>
+        {/* <i className="fi fi-brands-wepik text-2xl">Chatspace</i> */}
+        <img src={assets.logo} alt="Chatspace Logo" className='w-66' />
         <h2 className='text-2xl font-semibold'>Select a chat to start messaging</h2>
-        <p className='text-gray-400'>Choose from your existing chats, or start a new one by selecting a contact from the sidebar. Happy chatting!</p>
+        <p className='text-gray-400'>Happy chatting!</p>
       </div>
     )
 }

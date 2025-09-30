@@ -10,9 +10,9 @@ axios.defaults.baseURL = backendURL;
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [token, setToken] = useState(localStorage.getItem("token") || null);
-    const [authUser, setAuthUser] = useState(null);
-    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [token, setToken] = useState(localStorage.getItem("token") || null); //token is stored in local storage
+    const [authUser, setAuthUser] = useState(null);  //this user is the logged in user
+    const [onlineUsers, setOnlineUsers] = useState([]); //array of userIds who are online
     const [socket, setSocket] = useState(null);
 
     //check if user is authenticated and set user data and connect to socket
@@ -26,8 +26,6 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || "Authentication failed";
             console.log("Error checking auth", error);
-            // Don't show toast error for auth check failures on page load
-            // toast.error(errorMessage);
         }
     };
 
