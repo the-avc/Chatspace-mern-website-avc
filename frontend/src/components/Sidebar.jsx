@@ -89,7 +89,7 @@ const Sidebar = () => {
                 {/*--------------------- AI Assistant entry------------------------------- */}
                 <div
                     onClick={() => {
-                        setSelectedUser({ _id: 'ai-assistant', fullName: 'AI Assistant', profilePic: assets.profile_alison, isAI: true });
+                        setSelectedUser(userDummyData[0]);
                     }}
                     className={`relative flex items-center gap-2 p-2 mx-2 my-0.5 rounded-lg cursor-pointer hover:bg-gray-700/30 transition-all duration-200`}
                 >
@@ -105,7 +105,7 @@ const Sidebar = () => {
                         <p className='text-xs text-green-400'>Online</p>
                     </div>
                 </div>
-
+                {/*-------------------users--------------------------------------------------------- */}
                 {filteredUsers.map((user, index) => (
                     <div
                         onClick={() => {

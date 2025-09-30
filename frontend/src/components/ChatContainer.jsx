@@ -162,11 +162,18 @@ const ChatContainer = () => {
             }}
           />
           <input type="file" id="image" accept='image/png, image/jpeg' hidden
+            disabled={selectedUser._id === 'ai-assistant'}
             onChange={(e) => handleSendImage(e)}
           />
-          <label htmlFor='image'>
-            <i className="fi fi-rr-add-image text-white cursor-pointer text-lg"></i>
-
+          <label htmlFor='image' className='p-2 rounded-full hover:bg-gray-800/50 transition-colors'
+            onClick={(e) => {
+              if (selectedUser._id === 'ai-assistant') {
+                toast.error("Image upload is disabled for AI Assistant");
+                e.preventDefault();
+              }
+            }
+            }>
+            <i className={`fi fi-rr-add-image text-lg ${selectedUser._id === 'ai-assistant' ? 'text-gray-500 cursor-not-allowed' : 'text-white cursor-pointer'}`}></i>
           </label>
 
         </div>
