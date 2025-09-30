@@ -24,7 +24,7 @@ export const chatWithAI = async (req, res) => {
 		const response = await groq.chat.completions.create({
 			model: model || "llama-3.1-8b-instant",
 			messages,
-			temperature: 0.3
+			temperature: 0.3 // temperature means more random responses
 		});
 
 		const choice = response?.choices?.[0];

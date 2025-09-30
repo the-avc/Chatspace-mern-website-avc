@@ -80,18 +80,34 @@ export const makeMsgSeen = async (req, res) => {
 export const sendMessage = async (req, res) => {
     try {
         const senderId = req.user._id;
-        const { image, text } = req.body;
+        const { text } = req.body;
         const receiverId = req.params.userId;
 
         let imageUrl = "";
-        if (image) {
-            const uploadResponse = await cloudinary.uploader.upload(image);
+        
+        // Handle image upload via multer
+        if (req.file) {
+            const uploadResponse = await new Promise((resolve, reject) => {
+                cloudinary.uploader.upload_stream(
+                    { resource_type: 'image' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                ).end(req.file.buffer);
+            });
             imageUrl = uploadResponse.secure_url;
         }
+        
+        // Validate that either text or image is provided
+        if (!text && !imageUrl) {
+            return res.status(400).json({ success: false, message: "Either text or image is required" });
+        }
+        
         const newMessage = new Message({
             senderId,
             receiverId,
-            text,
+            text: text || "",
             image: imageUrl
         });
         

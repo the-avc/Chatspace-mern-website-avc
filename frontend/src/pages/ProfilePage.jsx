@@ -21,33 +21,18 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    if (!selectedImage) {
-      await updateProfile({
-        fullName: formData.name,
-        bio: formData.bio,
-      });
-      navigate('/');
-      console.log('No image selected');
-
-      return;
+    
+    // Create FormData object
+    const formDataToSend = new FormData();
+    formDataToSend.append('fullName', formData.name);
+    formDataToSend.append('bio', formData.bio);
+    
+    if (selectedImage) {
+      formDataToSend.append('profilePic', selectedImage);
     }
-    else {
-      console.log('Image selected:', selectedImage);
-      const reader = new FileReader();
-      reader.readAsDataURL(selectedImage);
-      reader.onload = async () => {
-        const base64Image = reader.result;
-        await updateProfile({
-          fullName: formData.name,
-          bio: formData.bio,
-          profilePic: base64Image,
-        });
-        navigate('/');
-      }
-
-    }
-    console.log('Form Data:', formData);
+    
+    await updateProfile(formDataToSend);
+    navigate('/');
   }
 
   return (

@@ -42,9 +42,15 @@ export const ChatProvider = ({ children }) => {
     }
 
     //func to send message to selected user
-    const sendMessage = async (msgData) => {
+    const sendMessage = async (msgData, isFormData = false) => {
         try {
-            const { data } = await axios.post(`/api/messages/send/${selectedUser._id}`, msgData);
+            const config = isFormData ? {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            } : {};
+            
+            const { data } = await axios.post(`/api/messages/send/${selectedUser._id}`, msgData, config);
             if (data?.success) {
                 setMessages(prev => [...prev, data.newMessage]);
             } else {

@@ -57,12 +57,11 @@ const ChatContainer = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      await sendMessage({ image: reader.result });
-      e.target.value = null; //reset the input
-    };
-    reader.readAsDataURL(file);
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    await sendMessage(formData, true); // Pass true to indicate this is FormData
+    e.target.value = null; //reset the input
   }
 
   useEffect(() => {

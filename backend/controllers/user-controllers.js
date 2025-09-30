@@ -54,17 +54,41 @@ export const login = async (req, res) => {
 //update user profile
 export const updateProfile = async (req, res) => {
     try {
-        const { fullName, bio, profilePic } = req.body;
+        const { fullName, bio } = req.body;
         const userId = req.user._id;
         let updatedUser;
 
-        if (!profilePic) {
+        if (!req.file) {
+            // No file uploaded, update only text fields
             updatedUser = await User.findByIdAndUpdate(userId, { fullName, bio }, { new: true });
+        } else {
+            // File uploaded via multer, upload to cloudinary
+            const uploadOnCloudinary = await cloudinary.uploader.upload_stream(
+                { resource_type: 'image' },
+                async (error, result) => {
+                    if (error) {
+                        console.log(error);
+                        return res.status(500).json({ message: "Image upload failed" });
+                    }
+                    
+                    updatedUser = await User.findByIdAndUpdate(
+                        userId, 
+                        { fullName, bio, profilePic: result.secure_url }, 
+                        { new: true }
+                    );
+                    
+                    res.status(200).json({ 
+                        success: true, 
+                        message: "User profile updated successfully", 
+                        updatedUser 
+                    });
+                }
+            );
+            
+            uploadOnCloudinary.end(req.file.buffer);
+            return; // Exit here since response is handled in callback
         }
-        else {
-            const uploadOnCloudinary = await cloudinary.uploader.upload(profilePic);
-            updatedUser = await User.findByIdAndUpdate(userId, { fullName, bio, profilePic: uploadOnCloudinary.secure_url }, { new: true });
-        }
+        
         res.status(200).json({ success: true, message: "User profile updated successfully", updatedUser });
     } catch (error) {
         console.log(error);
