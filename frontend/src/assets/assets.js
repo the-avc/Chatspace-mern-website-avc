@@ -21,9 +21,9 @@ export const userDummyData = [
     {
         "_id": "ai-assistant",
         "email": "test1@greatstack.dev",
-        "fullName": "AI Assistant",
+        "fullName": "Alison AI",
         "profilePic": assets.profile_alison,
-        "bio": "Hi Everyone, I am AI",
+        "bio": "Hi, I am Alison A.I.",
     },
     {
         "_id": "681f50aaf10f3cd28382ecf3",
