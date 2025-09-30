@@ -19,11 +19,11 @@ export const assets = {
 
 export const userDummyData = [
     {
-        "_id": "ai-assistant",
-        "email": "test1@greatstack.dev",
-        "fullName": "AI Assistant",
+        "_id": "68dbf6866eb3084437c9da9c",
+        "email": "alisonai@avc.avc",
+        "fullName": "Alison A.I.",
         "profilePic": assets.profile_alison,
-        "bio": "Hi Everyone, I am AI",
+        "bio": "Hi Everyone, I am Alison A.I.",
     },
     {
         "_id": "681f50aaf10f3cd28382ecf3",

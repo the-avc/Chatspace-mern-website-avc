@@ -1,8 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { assets } from '../assets/assets';
-import help_icon from '../assets/help.png'
-import avatar_icon from '../assets/avatar.png'
-import profile_alison from '../assets/profile_alison.avif';
 import { formatTimestamp } from '../lib/utils';
 import { askAI } from '../lib/ai.js';
 import { ChatContext } from '../../context/ChatContext';
@@ -31,17 +28,17 @@ const ChatContainer = () => {
     }
 
     const text = input.trim();
-    if (selectedUser?._id === 'ai-assistant') {
-      // local echo then ask AI
-      const now = new Date().toISOString();
-      setMessages(prev => [...prev, { _id: `${Date.now()}-me`, senderId: authUser._id, receiverId: 'ai-assistant', text, createdAt: now, seen: true }]);
+
+    if (selectedUser?._id === '68dbf6866eb3084437c9da9c') {
       setInput("");
       try {
-        const res = await askAI(axios, { prompt: text });
-        const reply = res?.content || res?.message?.content || '';
-        setMessages(prev => [...prev, { _id: `${Date.now()}-ai`, senderId: 'ai-assistant', receiverId: authUser._id, text: reply, createdAt: new Date().toISOString(), seen: true }]);
-      } catch (err) {
-        toast.error(err?.response?.data?.message || err.message || 'AI Error');
+        const response = await askAI(axios, { prompt: text });
+        if (response?.success && response?.userMessage && response?.aiMessage) {
+          // Add messages immediately like normal users
+          setMessages(prev => [...prev, response.userMessage, response.aiMessage]);
+        }
+      } catch (error) {
+        toast.error('AI service unavailable');
       }
       return;
     }
@@ -59,17 +56,14 @@ const ChatContainer = () => {
 
     const formData = new FormData();
     formData.append('image', file);
-    
+
     await sendMessage(formData, true); // Pass true to indicate this is FormData
     e.target.value = null; //reset the input
   }
 
   useEffect(() => {
     if (!selectedUser) return;
-    if (selectedUser?.isAI || selectedUser?._id === 'ai-assistant') {
-      setMessages([]);
-      return;
-    }
+    // Now AI assistant messages are also stored in DB, so fetch them like regular messages
     getMessages(selectedUser._id);
   }, [selectedUser]);
 
@@ -161,18 +155,18 @@ const ChatContainer = () => {
             }}
           />
           <input type="file" id="image" accept='image/png, image/jpeg' hidden
-            disabled={selectedUser._id === 'ai-assistant'}
+            disabled={selectedUser._id === '68dbf6866eb3084437c9da9c'}
             onChange={(e) => handleSendImage(e)}
           />
           <label htmlFor='image' className='p-2 rounded-full hover:bg-gray-800/50 transition-colors'
             onClick={(e) => {
-              if (selectedUser._id === 'ai-assistant') {
+              if (selectedUser._id === '68dbf6866eb3084437c9da9c') {
                 toast.error("Image upload is disabled for AI Assistant");
                 e.preventDefault();
               }
             }
             }>
-            <i className={`fi fi-rr-add-image text-lg ${selectedUser._id === 'ai-assistant' ? 'text-gray-500 cursor-not-allowed' : 'text-white cursor-pointer'}`}></i>
+            <i className={`fi fi-rr-add-image text-lg ${selectedUser._id === '68dbf6866eb3084437c9da9c' ? 'text-gray-500 cursor-not-allowed' : 'text-white cursor-pointer'}`}></i>
           </label>
 
         </div>
