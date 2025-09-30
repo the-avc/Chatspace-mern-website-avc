@@ -48,6 +48,7 @@ export const getAllMessages = async (req, res) => {
                     { senderId: otherUserId, receiverId: userId }
                 ]
             })
+            .sort({ createdAt: 1 })
 
         await Message.updateMany({
             senderId: otherUserId,
@@ -93,6 +94,9 @@ export const sendMessage = async (req, res) => {
             text,
             image: imageUrl
         });
+        
+        await newMessage.save();
+        
         //emit new message to receiver if online
         const receiverSocketId = userSocketMap.get(receiverId);
         if (receiverSocketId) {

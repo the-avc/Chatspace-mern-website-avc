@@ -22,7 +22,13 @@ const ChatContainer = () => {
 // handle send message
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (input.trim() === "" || !selectedUser) return;
+    if (!selectedUser) return;
+    
+    if (input.trim().length === 0) {
+      toast.error("Please enter a message");
+      return;
+    }
+    
     await sendMessage({ text: input.trim()});
     setInput("");
   }
@@ -71,10 +77,10 @@ const ChatContainer = () => {
         </p>
         {/* <img onClick={() => setSelectedUser(null)} className='md:hidden max-w-7' src={help_icon} alt="" /> */}
 
-        <i className="fi fi-rr-arrow-left text-white max-md:hidden"
+        <i className="fi fi-rr-arrow-left text-white text-2xl max-md:hidden cursor-pointer"
           onClick={() => setSelectedUser(null)}
         ></i>
-        <i className="fi fi-rr-info text-white max-md:hidden"></i>\
+        {/* <i className="fi fi-rr-info text-white max-md:hidden"></i>\ */}
       </div>
 
       {/* -------------------CHAT AREA-------------------------------------  */}
