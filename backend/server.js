@@ -5,6 +5,7 @@ import http from 'http';
 import { connectDB } from './lib/db.js';
 import userRouter from './routes/user-routes.js';
 import messageRouter from './routes/messages-routes.js';
+import aiRouter from "./routes/ai-routes.js";
 import { Server } from 'socket.io';
 
 dotenv.config();
@@ -25,7 +26,7 @@ export const userSocketMap = new Map(); //key:userId value:socketId
 
 io.on("connection", (socket) => {
     const userId = socket.handshake.query.userId;
-    console.log("User connected with ID:", userId);
+    // console.log("User connected with ID:", userId);
     if (userId) {
         userSocketMap.set(userId, socket.id);
     }
@@ -33,7 +34,7 @@ io.on("connection", (socket) => {
     io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
 
     socket.on("disconnect", () => {
-        console.log("User disconnected with ID:", userId);
+        // console.log("User disconnected with ID:", userId);
         if (userId) {
             userSocketMap.delete(userId);
         }
@@ -45,11 +46,14 @@ io.on("connection", (socket) => {
 
 //middlewares
 app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(cors());
 
 app.use("/api/status", (req, res) => res.send("Server is running"));
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
+
+app.use("/api/ai", aiRouter);
 
 connectDB();
 

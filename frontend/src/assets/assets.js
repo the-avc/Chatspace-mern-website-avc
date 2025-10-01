@@ -6,6 +6,7 @@ import img4 from './anime4.png';
 import img5 from './anime5.webp';
 import avatar_icon from './avatar.png';
 import logo from './logo.png';
+import favicon from './favicon.png';
 export const assets = {
     profile_alison,
     img1,
@@ -15,15 +16,16 @@ export const assets = {
     img5,
     avatar_icon,
     logo,
+    favicon
 }
 
 export const userDummyData = [
     {
-        "_id": "680f50aaf10f3cd28382ecf2",
-        "email": "test1@greatstack.dev",
-        "fullName": "Alison Martin",
+        "_id": "68dbf6866eb3084437c9da9c",
+        "email": "alisonai@avc.avc",
+        "fullName": "Alison A.I.",
         "profilePic": assets.profile_alison,
-        "bio": "Hi Everyone, I am Using Chatspace",
+        "bio": "Hi Everyone, I am Alison A.I.",
     },
     {
         "_id": "681f50aaf10f3cd28382ecf3",

@@ -4,4 +4,7 @@
 ::-webkit-scrollbar {
   display: none;
 }
+*{
+  -webkit-user-drag: none;
+}
 /* google fonts sanss serif */
