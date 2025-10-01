@@ -72,9 +72,7 @@ const ChatContainer = () => {
           {selectedUser.fullName}
           {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
         </p>
-        {/* <img onClick={() => setSelectedUser(null)} className='md:hidden max-w-7' src={help_icon} alt="" /> */}
-
-        <i className="fi fi-rr-arrow-left text-white text-2xl max-md:hidden cursor-pointer"
+        <i className="fi fi-br-cross text-white cursor-pointer"
           onClick={() => setSelectedUser(null)}
         ></i>
         {/* <i className="fi fi-rr-info text-white max-md:hidden"></i>\ */}

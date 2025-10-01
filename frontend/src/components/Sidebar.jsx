@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { assets, userDummyData } from '../assets/assets';
+import { assets } from '../assets/assets';
 import { AuthContext } from '../../context/AuthContext';
 import { ChatContext } from '../../context/ChatContext';
 
@@ -21,7 +21,6 @@ const Sidebar = () => {
             user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
         )
         : users;
-
 
     useEffect(() => {
         getUsers();

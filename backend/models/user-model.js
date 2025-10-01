@@ -16,12 +16,12 @@ const UserSchema = new mongoose.Schema({
     },
     profilePic: {
         type: String,
-        default:"",
+        default: "",
     },
     bio: {
         type: String,
         default: "Hey there! I am using Chatspace.",
     },
-},{timestamps: true});
+}, { timestamps: true });
 
 export const User = mongoose.model("User", UserSchema);

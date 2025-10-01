@@ -47,16 +47,16 @@ const LoginPage = () => {
       <div className='hidden md:flex md:flex-1 bg-gradient-to-br items-center justify-center bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6'>
         <div className='text-center'>
           <div className='flex items-center justify-center gap-4 mb-6'>
-              {/* <i className="fi fi-brands-rocketchat text-white text-3xl"></i> */}
-              <img src={assets.logo} alt="" className='w-75 rounded-md flex items-center justify-center' />
+            {/* <i className="fi fi-brands-rocketchat text-white text-3xl"></i> */}
+            <img src={assets.logo} alt="" className='w-75 rounded-md flex items-center justify-center' />
 
-            
+
             {/* <h1 className='text-4xl font-bold text-white'>Chatspace</h1> */}
           </div>
           <p className='text-blue-100 text-lg mb-8'>
             Connect with friends and family instantly
           </p>
-          {/* <div className='space-y-4 text-blue-100'>
+          <div className='space-y-4 text-blue-100'>
             <div className='flex items-center gap-3'>
               <i className="fi fi-rr-check-circle text-green-300"></i>
               <span>Real-time messaging</span>
@@ -69,7 +69,7 @@ const LoginPage = () => {
               <i className="fi fi-rr-check-circle text-green-300"></i>
               <span>Easy to use interface</span>
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
 
@@ -156,22 +156,6 @@ const LoginPage = () => {
                   />
                 </div>
               </div>
-
-              {/* {!isLogin && (
-                <div>
-                  <div className='relative'>
-                    <i className="fi fi-rr-edit absolute left-3 top-3 text-gray-400 text-sm"></i>
-                    <textarea
-                      name="bio"
-                      value={formData.bio}
-                      onChange={handleInputChange}
-                      placeholder="Tell us about yourself (optional)"
-                      rows="3"
-                      className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors resize-none'
-                    />
-                  </div>
-                </div>
-              )} */}
 
               {/* {!isLogin && (
               <div>
