@@ -57,10 +57,10 @@ export const getAllMessages = async (req, res) => {
         }, {
             $set: { seen: true }
         })
-        res.status(200).json({success:true, messages});
+        res.status(200).json({ success: true, messages });
     } catch (error) {
         console.log(error);
-        res.status(500).json({success:false, message: "Server Error", error });//500 means server error
+        res.status(500).json({ success: false, message: "Server Error", error });//500 means server error
     }
 }
 
@@ -69,10 +69,10 @@ export const makeMsgSeen = async (req, res) => {
     try {
         const msgId = req.params.msgId;
         await Message.findByIdAndUpdate(msgId, { seen: true });
-        res.status(200).json({ success:true,message: "Message marked as seen" });
+        res.status(200).json({ success: true, message: "Message marked as seen" });
     } catch (error) {
         console.log(error);
-        res.status(500).json({success:false, message: "Server Error", error });//500 means server error
+        res.status(500).json({ success: false, message: "Server Error", error });//500 means server error
     }
 }
 
@@ -94,17 +94,17 @@ export const sendMessage = async (req, res) => {
             text,
             image: imageUrl
         });
-        
+
         await newMessage.save();
-        
+
         //emit new message to receiver if online
         const receiverSocketId = userSocketMap.get(receiverId);
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage", newMessage);
         }
-        res.status(201).json({success:true,newMessage});
+        res.status(201).json({ success: true, newMessage });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ success:false,message: "Server Error", error });//500 means server error
+        res.status(500).json({ success: false, message: "Server Error", error });//500 means server error
     }
 }

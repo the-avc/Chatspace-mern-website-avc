@@ -38,8 +38,8 @@ io.on("connection", (socket) => {
         if (userId) {
             userSocketMap.delete(userId);
         }
-    //emit event to all connected users (convert Map keys to array)
-    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+        //emit event to all connected users (convert Map keys to array)
+        io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
     });
 });
 

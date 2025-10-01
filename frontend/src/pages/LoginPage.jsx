@@ -28,35 +28,27 @@ const LoginPage = () => {
     // Handle login/signup logic here
     const result = await login(isLogin ? 'login' : 'signup', formData);
     if (result?.success) {
-      // Redirect to profile page for signup (first-time users) to set up their profile
-      // Redirect to home page for login
-      if (result.isSignup) {
-        navigate('/profile');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     } else {
       console.log('Login/Signup failed:', result?.message);
     }
-    console.log(isLogin ? 'Logging in with' : 'Signing up with', formData);
+    // console.log(isLogin ? 'Logging in with' : 'Signing up with', formData);
   };
 
   return (
     <div className='min-h-screen flex'>
-      {/* Left Side - Logo/Branding */}
+      {/* --------------------------------Left Side - Logo/Branding---------------------------- */}
       <div className='hidden md:flex md:flex-1 bg-gradient-to-br items-center justify-center bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6'>
         <div className='text-center'>
           <div className='flex items-center justify-center gap-4 mb-6'>
-              {/* <i className="fi fi-brands-rocketchat text-white text-3xl"></i> */}
-              <img src={assets.logo} alt="" className='w-75 rounded-md flex items-center justify-center' />
-
-            
+            {/* <i className="fi fi-brands-rocketchat text-white text-3xl"></i> */}
+            <img src={assets.logo} alt="" className='w-75 rounded-md flex items-center justify-center' />
             {/* <h1 className='text-4xl font-bold text-white'>Chatspace</h1> */}
           </div>
           <p className='text-blue-100 text-lg mb-8'>
             Connect with friends and family instantly
           </p>
-          {/* <div className='space-y-4 text-blue-100'>
+          <div className='space-y-4 text-blue-100'>
             <div className='flex items-center gap-3'>
               <i className="fi fi-rr-check-circle text-green-300"></i>
               <span>Real-time messaging</span>
@@ -69,11 +61,11 @@ const LoginPage = () => {
               <i className="fi fi-rr-check-circle text-green-300"></i>
               <span>Easy to use interface</span>
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
 
-      {/* Right Side - Form */}
+      {/*-------------------------- Right Side - Form------------------------------------------------------ */}
       <div className='flex-1 flex items-center justify-center p-8'>
         <div className='w-full max-w-md'>
 
