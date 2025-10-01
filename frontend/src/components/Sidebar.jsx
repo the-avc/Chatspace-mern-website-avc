@@ -16,9 +16,9 @@ const Sidebar = () => {
     const navigate = useNavigate();
 
     // Separate AI Assistant from regular users
-    const aiAssistant = users.find(user => user._id === '68dbf6866eb3084437c9da9c');
-    const regularUsers = users.filter(user => user._id !== '68dbf6866eb3084437c9da9c');
-    
+    const aiAssistant = users.find(user => user._id === import.meta.env.VITE_AI_ASSISTANT_ID);
+    const regularUsers = users.filter(user => user._id !== import.meta.env.VITE_AI_ASSISTANT_ID);
+
     const filteredUsers = searchTerm
         ? regularUsers.filter(user =>
             user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,18 +50,13 @@ const Sidebar = () => {
             <div className='p-3 border-b border-gray-700/50'>
                 <div className='flex justify-between items-center mb-3'>
                     <div className='flex items-center gap-2'>
-
                         <img src={assets.logo} alt="" className='w-45 rounded-md flex items-center justify-center' />
-
-                        {/* <span className='text-sm font-semibold'>Chatspace</span> */}
-
                     </div>
                     <div className='relative' ref={dropdownRef}>
                         {/* user profile image and dropdown */}
                         <img src={authUser?.profilePic || assets.avatar_icon} alt="" className='w-8 h-8 rounded-full object-cover cursor-pointer border border-gray-600'
                             onClick={() => setHide(!hide)}
                         />
-
                         <div className={`absolute top-full right-0 z-20 w-28 p-2 rounded-lg bg-gray-800/90 backdrop-blur-sm border border-gray-600 text-gray-100 shadow-lg ${hide ? 'block' : 'hidden'}`}
                         >
                             <p className='cursor-pointer text-xs py-1 hover:text-blue-400 transition-colors'
@@ -89,28 +84,28 @@ const Sidebar = () => {
 
             {/* Users List */}
             <div className='flex flex-col overflow-y-auto h-[calc(100%-120px)]'>
-                {/*--------------------- AI Assistant entry (Always at top) ------------------------------- */}
+                {/*--------------------- AI Assistant (Always at top) ------------------------------- */}
                 {aiAssistant && (
                     <div
                         onClick={() => {
                             setSelectedUser(aiAssistant);
-                            setUnseenMessages(prev => ({ ...prev, [aiAssistant._id]: 0 }));
+                            // setUnseenMessages(prev => ({ ...prev, [aiAssistant._id]: 0 }));
                         }}
                         className={`relative flex items-center gap-2 p-2 mx-2 my-0.5 rounded-lg cursor-pointer hover:bg-gray-700/30 transition-all duration-200 ${selectedUser?._id === aiAssistant._id ? "bg-blue-500/20 border-l-4 border-blue-500" : ""}`}
                     >
                         <div className='relative'>
-                            <img src={aiAssistant.profilePic || assets.avatar_icon} alt="AI" className='w-10 h-10 rounded-full object-cover border border-gray-600' />
+                            <img src={aiAssistant.profilePic} alt="AI" className='w-10 h-10 rounded-full object-cover border border-gray-600' />
                             <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border border-gray-800 bg-green-500`}></div>
                         </div>
 
                         <div className='flex-1 min-w-0'>
                             <div className='flex items-center justify-between'>
                                 <p className='font-medium text-sm truncate'>🤖 {aiAssistant.fullName}</p>
-                                {unseenMessages[aiAssistant._id] > 0 && (
+                                {/* {unseenMessages[aiAssistant._id] > 0 && (
                                     <span className='bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none'>
                                         {unseenMessages[aiAssistant._id]}
                                     </span>
-                                )}
+                                )} */}
                             </div>
                             <p className='text-xs text-green-400'>Always Online</p>
                         </div>

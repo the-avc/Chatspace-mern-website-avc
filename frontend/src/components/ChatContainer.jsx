@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect, useRef } from 'react'
 import { assets } from '../assets/assets';
 import { formatTimestamp } from '../lib/utils';
 import { askAI } from '../lib/ai.js';
@@ -12,10 +12,7 @@ const ChatContainer = () => {
 
   const [input, setInput] = useState("");
 
-  const scrollEnd = React.useRef(null);
-  // React.useEffect(() => {
-  //   scrollEnd.current?.scrollIntoView({ behavior: "smooth" });
-  // }, [selectedUser]);
+  const scrollEnd = useRef(null);
 
   // handle send message
   const handleSendMessage = async (e) => {
@@ -29,12 +26,11 @@ const ChatContainer = () => {
 
     const text = input.trim();
 
-    if (selectedUser?._id === '68dbf6866eb3084437c9da9c') {
+    if (selectedUser?._id === import.meta.env.VITE_AI_ASSISTANT_ID) {
       setInput("");
       try {
         const response = await askAI(axios, { prompt: text });
         if (response?.success && response?.userMessage && response?.aiMessage) {
-          // Add messages immediately like normal users
           setMessages(prev => [...prev, response.userMessage, response.aiMessage]);
         }
       } catch (error) {
@@ -87,12 +83,10 @@ const ChatContainer = () => {
           {selectedUser.fullName}
           {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
         </p>
-        {/* <img onClick={() => setSelectedUser(null)} className='md:hidden max-w-7' src={help_icon} alt="" /> */}
 
-        <i className="fi fi-rr-arrow-left text-white text-2xl max-md:hidden cursor-pointer"
+        <i className="fi fi-br-cross text-white max-md:hidden cursor-pointer"
           onClick={() => setSelectedUser(null)}
         ></i>
-        {/* <i className="fi fi-rr-info text-white max-md:hidden"></i>\ */}
       </div>
 
       {/* -------------------CHAT AREA-------------------------------------  */}
@@ -155,12 +149,12 @@ const ChatContainer = () => {
             }}
           />
           <input type="file" id="image" accept='image/png, image/jpeg' hidden
-            disabled={selectedUser._id === '68dbf6866eb3084437c9da9c'}
+            disabled={selectedUser._id === import.meta.env.VITE_AI_ASSISTANT_ID}
             onChange={(e) => handleSendImage(e)}
           />
           <label htmlFor='image' className='p-2 rounded-full hover:bg-gray-800/50 transition-colors'
             onClick={(e) => {
-              if (selectedUser._id === '68dbf6866eb3084437c9da9c') {
+              if (selectedUser._id === import.meta.env.VITE_AI_ASSISTANT_ID) {
                 toast.error("Image upload is disabled for AI Assistant");
                 e.preventDefault();
               }
@@ -180,7 +174,6 @@ const ChatContainer = () => {
   ) :
     (
       <div className='h-full flex flex-col justify-center items-center gap-5 text-white text-center px-5'>
-        {/* <i className="fi fi-brands-wepik text-2xl">Chatspace</i> */}
         <img src={assets.logo} alt="Chatspace Logo" className='w-66' />
         <h2 className='text-2xl font-semibold'>Select a chat to start messaging</h2>
         <p className='text-gray-400'>Happy chatting!</p>

@@ -6,7 +6,7 @@ import { userSocketMap, io } from "../server.js";
 // Simple AI chat completion controller
 export const chatWithAI = async (req, res) => {
 	try {
-		const { messages: incomingMessages, model, prompt } = req.body || {};
+		const { messages: incomingMessages, model, prompt } = req.body || {}; //message and prompt are different it means that message is an array of objects and prompt is a string
 		const userId = req.user._id; // Current user ID
 		
 		if (!process.env.GROQ_API_KEY) {
@@ -16,7 +16,7 @@ export const chatWithAI = async (req, res) => {
 		let messages = incomingMessages;
 		if ((!Array.isArray(messages) || messages.length === 0) && typeof prompt === "string" && prompt.trim().length > 0) {
 			messages = [
-				{ role: "system", content: "You are a Alison A.I. created by the-AVC for your assistance" }, //this is used for context so that AI knows who it is
+				{ role: "system", content: "You are a Alison A.I. created by Mr.AVC for assistance" }, //this is used for context so that AI knows who it is
 				{ role: "user", content: prompt }
 			];
 		}
@@ -26,23 +26,23 @@ export const chatWithAI = async (req, res) => {
 		}
 
 		// Find or create AI assistant user
-		let aiAssistant = await User.findOne({ _id: '68dbf6866eb3084437c9da9c' });
-		if (!aiAssistant) {
-			// Create AI assistant user if it doesn't exist
-			aiAssistant = new User({
-				_id: '68dbf6866eb3084437c9da9c',
-				fullName: 'AI Assistant',
-				email: 'ai@assistant.com',
-				password: 'dummy-password', // Won't be used for login
-				profilePic: 'https://res.cloudinary.com/dsx8vik1u/image/upload/v1754050250/cld-sample.jpg'
-			});
-			await aiAssistant.save();
-		}
+		let aiAssistant = await User.findOne({ _id: process.env.AI_ASSISTANT_ID });
+		// if (!aiAssistant) {
+		// 	// Create AI assistant user if it doesn't exist
+		// 	aiAssistant = new User({
+		// 		_id: process.env.AI_ASSISTANT_ID,
+		// 		fullName: 'AI Assistant',
+		// 		email: 'ai@assistant.com',
+		// 		password: 'dummy-password', // Won't be used for login
+		// 		profilePic: 'https://res.cloudinary.com/dsx8vik1u/image/upload/v1754050250/cld-sample.jpg'
+		// 	});
+		// 	await aiAssistant.save();
+		// }
 
 		// Save user message to database
 		const userMessage = new Message({
 			senderId: userId,
-			receiverId: '68dbf6866eb3084437c9da9c',
+			receiverId: process.env.AI_ASSISTANT_ID,
 			text: prompt,
 			seen: true // AI messages are immediately "seen"
 		});
@@ -61,7 +61,7 @@ export const chatWithAI = async (req, res) => {
 
 		// Save AI response to database
 		const aiMessage = new Message({
-			senderId: '68dbf6866eb3084437c9da9c',
+			senderId: process.env.AI_ASSISTANT_ID,
 			receiverId: userId,
 			text: aiReply,
 			seen: true
