@@ -1,15 +1,19 @@
 export function formatTimestamp(timestamp) {
     if (!timestamp) return '';
-    
+
     const date = new Date(timestamp);
-    
-    // Check if date is valid
     if (isNaN(date.getTime())) return '';
-    
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12;
-    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-    return `${formattedHours}:${formattedMinutes} ${ampm}`;
+
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+
+    // Format time
+    const timeString = date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+
+    // Return time only for today, date + time for older messages
+    return isToday ? timeString : `${date.toLocaleDateString('en-US')} ${timeString}`;
 }

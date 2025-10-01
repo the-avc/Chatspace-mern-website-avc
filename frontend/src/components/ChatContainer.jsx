@@ -78,7 +78,7 @@ const ChatContainer = () => {
 
       {/* -------------------HEADER-------------------------------------  */}
       <div className='flex items-center gap-3 py-3 mx-4 border-b border-stone-500'>
-        <img src={selectedUser.profilePic || assets.avatar_icon} alt="" className='w-8 rounded-full' />
+        <img src={selectedUser.profilePic || assets.avatar_icon} alt="" className='w-8 h-8 rounded-full object-cover mt-auto' />
         <p className='flex-1 text-lg text-white flex items-center gap-2'>
           {selectedUser.fullName}
           {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
@@ -152,7 +152,7 @@ const ChatContainer = () => {
             disabled={selectedUser._id === import.meta.env.VITE_AI_ASSISTANT_ID}
             onChange={(e) => handleSendImage(e)}
           />
-          <label htmlFor='image' className='p-2 rounded-full hover:bg-gray-800/50 transition-colors'
+          <label htmlFor='image' className='p-2 rounded-full cursor-pointer'
             onClick={(e) => {
               if (selectedUser._id === import.meta.env.VITE_AI_ASSISTANT_ID) {
                 toast.error("Image upload is disabled for AI Assistant");

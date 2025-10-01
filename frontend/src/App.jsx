@@ -33,6 +33,12 @@ const App = () => {
           rotation={0.0}
         />
       </div>
+      
+      {/* Global Version Indicator */}
+      <div className='fixed top-2 left-2 z-50 text-white/20 text-sm font-mono pointer-events-none'>
+       the-AVC
+      </div>
+      
       <Toaster />
       <Routes>
         <Route path='/' element={authUser ? <HomePage /> : <Navigate to="/login" />} />
@@ -40,6 +46,10 @@ const App = () => {
         <Route path='/profile' element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path='/*' element={authUser ? <Navigate to="/" /> : <Navigate to="/login" />} />
       </Routes>
+
+      <div className='absolute bottom-2 right-4 text-white/20 text-xs pointer-events-none'>
+              © 2025 Chatspace v3.0. All rights reserved.
+            </div>
     </>
   )
 }
