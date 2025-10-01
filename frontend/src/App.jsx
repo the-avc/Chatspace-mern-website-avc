@@ -26,7 +26,7 @@ const App = () => {
       <div className='inset-0 z-0 absolute'>
         <Silk
           key={location.pathname} //key is used to remount the component on route change
-          speed={2.5}
+          speed={2.2}
           scale={1}
           color={currentColor}
           noiseIntensity={1.5}
