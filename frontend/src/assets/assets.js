@@ -6,6 +6,7 @@ import img4 from './anime4.png';
 import img5 from './anime5.webp';
 import avatar_icon from './avatar.png';
 import logo from './logo.png';
+import favicon from './favicon.png';
 export const assets = {
     profile_alison,
     img1,
@@ -15,6 +16,7 @@ export const assets = {
     img5,
     avatar_icon,
     logo,
+    favicon
 }
 
 export const userDummyData = [

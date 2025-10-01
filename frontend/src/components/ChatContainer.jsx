@@ -84,7 +84,7 @@ const ChatContainer = () => {
           {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
         </p>
 
-        <i className="fi fi-br-cross text-white max-md:hidden cursor-pointer"
+        <i className="fi fi-br-cross text-white cursor-pointer"
           onClick={() => setSelectedUser(null)}
         ></i>
       </div>
