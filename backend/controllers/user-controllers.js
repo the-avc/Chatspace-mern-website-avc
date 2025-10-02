@@ -21,8 +21,8 @@ export const signup = async (req, res) => {
         const token = generateToken(newUser._id);
         res.status(201).json({ success: true, message: "User created successfully", userData: newUser, token });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+        console.log("Signup error:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
@@ -33,21 +33,23 @@ export const login = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select("+password");
         if (!user) {
-            return res.status(400).json({ message: "User not found" });
+            return res.status(400).json({ message: "Invalid credentials" });
         }
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
         if (!isPasswordCorrect) {
-            return res.status(400).json({ message: "Invalid password" });
+            return res.status(400).json({ message: "Invalid credentials" });
         }
 
+        // Remove password before sending response
+        const { password: _, ...userWithoutPassword } = user.toObject();
         const token = generateToken(user._id);
-        res.status(200).json({ success: true, message: "User logged in successfully", userData: user, token });
+        res.status(200).json({ success: true, message: "User logged in successfully", userData: userWithoutPassword, token });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+        console.log("Login error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 }
 
@@ -67,32 +69,32 @@ export const updateProfile = async (req, res) => {
                 { resource_type: 'image' },
                 async (error, result) => {
                     if (error) {
-                        console.log(error);
+                        console.log("Image upload error:", error);
                         return res.status(500).json({ message: "Image upload failed" });
                     }
-                    
+
                     updatedUser = await User.findByIdAndUpdate(
-                        userId, 
-                        { fullName, bio, profilePic: result.secure_url }, 
+                        userId,
+                        { fullName, bio, profilePic: result.secure_url },
                         { new: true } //new : return the updated document
                     );
-                    
-                    res.status(200).json({ 
-                        success: true, 
-                        message: "User profile updated successfully", 
-                        updatedUser 
+
+                    res.status(200).json({
+                        success: true,
+                        message: "User profile updated successfully",
+                        updatedUser
                     });
                 }
             );
-            
+
             uploadOnCloudinary.end(req.file.buffer);
             return; // Exit here since response is handled in callback
         }
-        
+
         res.status(200).json({ success: true, message: "User profile updated successfully", updatedUser });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+        console.log("Update profile error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 }
 

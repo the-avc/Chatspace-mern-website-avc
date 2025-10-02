@@ -26,7 +26,7 @@ export const chatWithAI = async (req, res) => {
 		}
 
 		// Find or create AI assistant user
-		let aiAssistant = await User.findOne({ _id: process.env.AI_ASSISTANT_ID });
+		// let aiAssistant = await User.findOne({ _id: process.env.AI_ASSISTANT_ID });
 		// if (!aiAssistant) {
 		// 	// Create AI assistant user if it doesn't exist
 		// 	aiAssistant = new User({
@@ -79,8 +79,8 @@ export const chatWithAI = async (req, res) => {
 			aiMessage
 		});
 	} catch (error) {
-		console.log(error);
-		return res.status(500).json({ success: false, message: "AI Service Error", error });
+		console.log("AI chat error:", error);
+		return res.status(500).json({ success: false, message: "Internal server error" });
 	}
 };
 

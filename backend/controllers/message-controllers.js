@@ -30,8 +30,8 @@ export const getUsersForSidebar = async (req, res) => {
         const usersWithUnseen = await Promise.all(unseen);
         res.status(200).json({ success: true, users: filteredUsers, unseenMsgs });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, message: "Server Error", error });//500 means server error
+        console.log("Get users error:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
 
@@ -59,8 +59,8 @@ export const getAllMessages = async (req, res) => {
         })
         res.status(200).json({success:true, messages});
     } catch (error) {
-        console.log(error);
-        res.status(500).json({success:false, message: "Server Error", error });//500 means server error
+        console.log("Get messages error:", error);
+        res.status(500).json({success:false, message: "Internal server error" });
     }
 }
 
@@ -71,8 +71,8 @@ export const makeMsgSeen = async (req, res) => {
         await Message.findByIdAndUpdate(msgId, { seen: true });
         res.status(200).json({ success:true,message: "Message marked as seen" });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({success:false, message: "Server Error", error });//500 means server error
+        console.log("Mark message seen error:", error);
+        res.status(500).json({success:false, message: "Internal server error" });
     }
 }
 
@@ -120,7 +120,7 @@ export const sendMessage = async (req, res) => {
         }
         res.status(201).json({success:true,newMessage});
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ success:false,message: "Server Error", error });//500 means server error
+        console.log("Send message error:", error);
+        res.status(500).json({ success:false,message: "Internal server error" });
     }
 }

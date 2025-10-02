@@ -11,14 +11,14 @@ export const verifyToken = async (req, res, next) => {
         if (!decoded) {
             return res.status(401).json({ message: "Unauthorized" });
         }
-        const user = await User.findById(decoded.id).select("-password");
+        const user = await User.findById(decoded.id);
         if (!user) {
             return res.status(401).json({ message: "Unauthorized" });
         }
         req.user = user;
         next();
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+        console.log("Auth error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 }

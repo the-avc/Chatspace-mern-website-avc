@@ -45,7 +45,7 @@ const LoginPage = () => {
               <img src={assets.logo} alt="" className='w-88 rounded-md flex items-center justify-center' />
               {/* <h1 className='text-4xl font-bold text-white'>Chatspace</h1> */}
             </div>
-            <p className='text-white text-xl mb-8 font-medium'>
+            <div className='text-white text-xl mb-8 font-medium'>
               Connect with <TextType
                 text={["friends", "families", "colleagues", "Alison A.I.", "many more!"]}
                 typingSpeed={100}
@@ -55,7 +55,7 @@ const LoginPage = () => {
                 cursorCharacter="|"
                 className='inline-block'
               />
-            </p>
+            </div>
             <div className='space-y-4 text-blue-100'>
               <div className='flex items-center gap-3'>
                 <i className="fi fi-rr-check-circle text-green-300"></i>
