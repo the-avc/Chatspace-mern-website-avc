@@ -10,6 +10,7 @@ import userRouter from './routes/user-routes.js';
 import messageRouter from './routes/messages-routes.js';
 import aiRouter from "./routes/ai-routes.js";
 import { Server } from 'socket.io';
+import { loadAiEnabled } from './controllers/ai-controllers.js';
 
 dotenv.config();
 
@@ -63,6 +64,7 @@ app.use("/api/messages", messageRouter);
 app.use("/api/ai", aiRouter);
 
 connectDB();
+loadAiEnabled(); // Load AI enabled status on server start
 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

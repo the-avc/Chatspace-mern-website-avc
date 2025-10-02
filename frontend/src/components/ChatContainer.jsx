@@ -1,18 +1,30 @@
 import React, { useContext, useState, useEffect, useRef } from 'react'
 import { assets } from '../assets/assets';
 import { formatTimestamp } from '../lib/utils';
-import { askAI } from '../lib/ai.js';
+import { askAI, fetchAiStatus } from '../lib/ai.js';
 import { ChatContext } from '../../context/ChatContext';
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { AiContext } from '../../context/AiContext.jsx';
 
 const ChatContainer = () => {
   const { messages, selectedUser, setSelectedUser, sendMessage, getMessages, setMessages } = useContext(ChatContext);
   const { authUser, onlineUsers, axios } = useContext(AuthContext);
+  const { aiEnabled, setAiEnabled, handleToggleAi } = useContext(AiContext);
 
   const [input, setInput] = useState("");
 
   const scrollEnd = useRef(null);
+
+  useEffect(() => {
+    // Fetch initial AI status from server
+    fetchAiStatus(axios).then(status => {
+      if (typeof status === 'boolean') {
+        setAiEnabled(status);
+      }
+    });
+  }, []);
+
 
   // handle send message
   const handleSendMessage = async (e) => {
@@ -29,6 +41,10 @@ const ChatContainer = () => {
     if (selectedUser?._id === import.meta.env.VITE_AI_ASSISTANT_ID) {
       setInput("");
       try {
+        if (!aiEnabled) {
+          toast.error("AI is not available at the moment");
+          return;
+        }
         const response = await askAI(axios, { prompt: text });
         if (response?.success && response?.userMessage && response?.aiMessage) {
           setMessages(prev => [...prev, response.userMessage, response.aiMessage]);
@@ -108,6 +124,19 @@ const ChatContainer = () => {
           {selectedUser.fullName}
           {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
         </p>
+
+        {/* Admin-only AI toggle */}
+        {authUser && String(authUser._id) === String(import.meta.env.VITE_ADMIN_ID) && (
+          <div className='flex items-center gap-2 text-sm text-white'>
+            <button
+              className={`px-2 py-1 rounded ${aiEnabled ? 'bg-green-500' : 'bg-gray-600'}`}
+              onClick={handleToggleAi}
+              title={aiEnabled ? 'Disable AI' : 'Enable AI'}
+            >
+              {aiEnabled ? 'On' : 'Off'}
+            </button>
+          </div>
+        )}
 
         <i className="fi fi-br-cross text-white cursor-pointer"
           onClick={() => setSelectedUser(null)}

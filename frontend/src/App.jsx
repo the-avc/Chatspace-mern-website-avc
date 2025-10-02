@@ -47,7 +47,7 @@ const App = () => {
         <Route path='/*' element={authUser ? <Navigate to="/" /> : <Navigate to="/login" />} />
       </Routes>
 
-      <div className='absolute bottom-2 font-mono right-4 text-white/20 text-xs pointer-events-none'>
+      <div className='absolute bottom-2 font-mono right-4 text-white/25 text-xs pointer-events-none'>
         © 2025 Chatspace v2.0. All rights reserved.
       </div>
     </>
