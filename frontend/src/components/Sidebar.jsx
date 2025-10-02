@@ -16,11 +16,11 @@ const Sidebar = () => {
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    const filteredUsers = searchTerm
-        ? users.filter(user =>
+    const filteredUsers = (searchTerm
+        ? (users || []).filter(user =>
             user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
         )
-        : users;
+        : (users || []));
 
 
     useEffect(() => {
@@ -63,7 +63,7 @@ const Sidebar = () => {
                         >
                             <p className='cursor-pointer text-xs py-1 hover:text-blue-400 transition-colors'
                                 onClick={() => navigate('/profile')}
-                            >Edit Profile : {authUser.fullName}</p>
+                            >Edit Profile : {authUser?.fullName}</p>
                             <hr className='my-1 border-gray-600' />
                             <p className='cursor-pointer text-xs py-1 hover:text-red-400 transition-colors'
                                 onClick={() => logout()}
@@ -91,8 +91,8 @@ const Sidebar = () => {
                     onClick={() => {
                         setSelectedUser(userDummyData[0]);
                     }}
-                    className={`relative flex items-center gap-2 p-2 mx-2 my-0.5 rounded-lg cursor-pointer hover:bg-gray-700/30 transition-all duration-200 ${selectedUser._id ==='ai-assistant' ? "bg-blue-500/20 border-l-4 border-blue-500" : ""
-                    }`}
+                    className={`relative flex items-center gap-2 p-2 mx-2 my-0.5 rounded-lg cursor-pointer hover:bg-gray-700/30 transition-all duration-200 ${selectedUser?._id === 'ai-assistant' ? "bg-blue-500/20 border-l-4 border-blue-500" : ""
+                        }`}
                 >
                     <div className='relative'>
                         <img src={assets.profile_alison} alt="AI" className='w-10 h-10 rounded-full object-cover border border-gray-600' />
@@ -108,10 +108,11 @@ const Sidebar = () => {
                 </div>
                 {/*-------------------users--------------------------------------------------------- */}
                 {filteredUsers.map((user, index) => (
+                    user._id !== import.meta.env.VITE_AI_ASSISTANT_ID &&
                     <div
                         onClick={() => {
                             setSelectedUser(user);
-                            setUnseenMessages(prev => ({ ...prev, [user._id]: 0 }));
+                            setUnseenMessages(prev => ({ ...(prev || {}), [user._id]: 0 }));
                         }}
                         key={index}
                         className={`relative flex items-center gap-2 p-2 mx-2 my-0.5 rounded-lg cursor-pointer hover:bg-gray-700/30 transition-all duration-200 ${selectedUser?._id === user._id ? "bg-blue-500/20 border-l-4 border-blue-500" : ""
@@ -119,21 +120,21 @@ const Sidebar = () => {
                     >
                         <div className='relative'>
                             <img src={user?.profilePic || assets.avatar_icon} alt="" className='w-10 h-10 rounded-full object-cover border border-gray-600' />
-                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border border-gray-800 ${onlineUsers.includes(user._id) ? 'bg-green-500' : 'bg-gray-500'
+                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border border-gray-800 ${onlineUsers?.includes(user._id) ? 'bg-green-500' : 'bg-gray-500'
                                 }`}></div>
                         </div>
 
                         <div className='flex-1 min-w-0'>
                             <div className='flex items-center justify-between'>
                                 <p className='font-medium text-sm truncate'>{user.fullName}</p>
-                                {unseenMessages[user._id] > 0 && (
+                                {unseenMessages?.[user._id] > 0 && (
                                     <span className='bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none'>
-                                        {unseenMessages[user._id]}
+                                        {unseenMessages?.[user._id]}
                                     </span>
                                 )}
                             </div>
-                            <p className={`text-xs ${onlineUsers.includes(user._id) ? 'text-green-400' : 'text-gray-400'}`}>
-                                {onlineUsers.includes(user._id) ? 'Online' : 'Offline'}
+                            <p className={`text-xs ${onlineUsers?.includes(user._id) ? 'text-green-400' : 'text-gray-400'}`}>
+                                {onlineUsers?.includes(user._id) ? 'Online' : 'Offline'}
                             </p>
                         </div>
                     </div>

@@ -19,10 +19,13 @@ export const signup = async (req, res) => {
         const newUser = await User.create({ fullName, email, password: hashedPassword, profilePic, bio });
 
         const token = generateToken(newUser._id);
-        res.status(201).json({ success: true, message: "User created successfully", userData: newUser, token });
+        // return created user without password
+        const safeUser = newUser.toObject();
+        if (safeUser.password) delete safeUser.password;
+        res.status(201).json({ success: true, message: "User created successfully", userData: safeUser, token });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
 }
 
@@ -43,11 +46,14 @@ export const login = async (req, res) => {
         }
 
         const token = generateToken(user._id);
-        res.status(200).json({ success: true, message: "User logged in successfully", userData: user, token });
+        // return user without password
+        const safeUser = user.toObject();
+        if (safeUser.password) delete safeUser.password;
+        res.status(200).json({ success: true, message: "User logged in successfully", userData: safeUser, token });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
 }
 
@@ -59,16 +65,16 @@ export const updateProfile = async (req, res) => {
         let updatedUser;
 
         if (!profilePic) {
-            updatedUser = await User.findByIdAndUpdate(userId, { fullName, bio }, { new: true });
+            updatedUser = await User.findByIdAndUpdate(userId, { fullName, bio }, { new: true }).select("-password");
         }
         else {
-            const uploadOnCloudinary = await cloudinary.uploader.upload(profilePic);
+            const uploadOnCloudinary = await cloudinary.uploader.upload(profilePic).select("-password");
             updatedUser = await User.findByIdAndUpdate(userId, { fullName, bio, profilePic: uploadOnCloudinary.secure_url }, { new: true });
         }
         res.status(200).json({ success: true, message: "User profile updated successfully", updatedUser });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
 }
 
