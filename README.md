@@ -30,6 +30,32 @@ A full-featured real-time chat application built with the MERN stack, featuring 
 - **AI Integration**: Groq SDK
 - **Deployment**: Vercel-ready configuration
 
+## ⚠️ Remaining pitfalls & known limitations (what still needs work)
+
+- Socket authentication is weak
+   - Current implementation trusts `userId` sent in the socket handshake query. This is easily spoofed. Recommended: verify JWT in `io.use()` and attach a verified `socket.userId`.
+
+- Single-socket mapping & multi-device problems
+   - `userSocketMap` stores one socket id per user and will overwrite when the user opens another tab or device. Consider `Map<userId, Set<socketId>>` to support multiple connections per user.
+
+- Presence and scaling
+   - Presence is kept in memory and is not shared between instances. For multi-instance deployments you must use a Socket.IO adapter (Redis) to share presence and events.
+
+- Large image uploads and performance
+   - Base64 uploads inflate payloads (~33% overhead) and commonly hit the 2MB JSON parser limit; for large files prefer multipart/form-data, resumable uploads, or direct-to-Cloudinary client uploads.
+
+- No refresh-token flow implemented
+   - The repo currently issues access tokens only. Long-lived sessions should use refresh tokens (rotating refresh tokens recommended) to improve UX and security.
+
+- Inconsistent error responses & logging
+   - Some controllers return detailed errors (stack traces) to clients. For production, return safe, generic messages to clients and log details server-side.
+
+- Missing rate limiting and abuse protection
+   - No `express-rate-limit` or similar throttling is present by default. Add rate limiting to authentication and AI endpoints to avoid abuse and extra costs.
+
+- Validation gaps
+   - File-type and file-size validation is minimal. Add server-side checks to reject disallowed file types and scan for malicious payloads when necessary.
+
 ## �📁 Project Structure
 
 ```
