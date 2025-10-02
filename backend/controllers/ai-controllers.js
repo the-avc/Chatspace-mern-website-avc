@@ -1,6 +1,5 @@
 import Groq from "groq-sdk";
 import { Message } from "../models/message-model.js";
-import { User } from "../models/user-model.js";
 import { userSocketMap, io } from "../server.js";
 
 // Simple AI chat completion controller
@@ -22,7 +21,7 @@ export const chatWithAI = async (req, res) => {
 		}
 
 		if (!Array.isArray(messages) || messages.length === 0) {
-			return res.status(400).json({ success: false, message: "messages array is required (or provide 'prompt')" });
+			return res.status(400).json({ success: false, message: "messages array is required" });
 		}
 
 		// Find or create AI assistant user
@@ -44,7 +43,7 @@ export const chatWithAI = async (req, res) => {
 			senderId: userId,
 			receiverId: process.env.AI_ASSISTANT_ID,
 			text: prompt,
-			seen: true // AI messages are immediately "seen"
+			seen: true // AI messages immediately "seen"
 		});
 		await userMessage.save();
 
@@ -69,7 +68,6 @@ export const chatWithAI = async (req, res) => {
 		await aiMessage.save();
 
 		// Note: Not emitting socket events for AI messages since frontend handles them directly
-		// This prevents duplicate messages from appearing
 
 		return res.status(200).json({
 			success: true,

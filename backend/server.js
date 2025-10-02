@@ -2,7 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import http from 'http';
+import jwt from 'jsonwebtoken';
 import { connectDB } from './lib/db.js';
+import { User } from './models/user-model.js';
+import { verifySocket } from './middlewares/auth.js';
 import userRouter from './routes/user-routes.js';
 import messageRouter from './routes/messages-routes.js';
 import aiRouter from "./routes/ai-routes.js";
@@ -24,9 +27,14 @@ export const io = new Server(server, {
 //store online users
 export const userSocketMap = new Map(); //key:userId value:socketId
 
+// Use socket authentication middleware
+io.use(verifySocket);
+
 io.on("connection", (socket) => {
-    const userId = socket.handshake.query.userId;
-    // console.log("User connected with ID:", userId);
+    // Use verified userId from authentication middleware
+    const userId = socket.userId; 
+    console.log(`User connected: ${socket.user.fullName} (${userId})`);
+
     if (userId) {
         userSocketMap.set(userId, socket.id);
     }
@@ -34,12 +42,12 @@ io.on("connection", (socket) => {
     io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
 
     socket.on("disconnect", () => {
-        // console.log("User disconnected with ID:", userId);
+        console.log(`User disconnected: ${socket.user.fullName} (${userId})`);
         if (userId) {
             userSocketMap.delete(userId);
         }
-    //emit event to all connected users (convert Map keys to array)
-    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+        //emit event to all connected users (convert Map keys to array)
+        io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
     });
 });
 
@@ -52,7 +60,6 @@ app.use(cors());
 app.use("/api/status", (req, res) => res.send("Server is running"));
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
-
 app.use("/api/ai", aiRouter);
 
 connectDB();

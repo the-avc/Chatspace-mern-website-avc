@@ -32,7 +32,6 @@ const LoginPage = () => {
     } else {
       console.log('Login/Signup failed:', result?.message);
     }
-    // console.log(isLogin ? 'Logging in with' : 'Signing up with', formData);
   };
 
   return (

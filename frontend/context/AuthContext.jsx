@@ -3,7 +3,6 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-
 const backendURL = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL = backendURL;
 
@@ -45,10 +44,9 @@ export const AuthProvider = ({ children }) => {
                 toast.error(data.message);
                 return { success: false, message: data.message };
             }
-
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || "An error occurred";
-            toast.error(errorMessage);
+            toast.error("Login failed");
             return { success: false, message: errorMessage };
         }
     }
@@ -92,7 +90,19 @@ export const AuthProvider = ({ children }) => {
     //connect socket to handle real-time events
     const connectSocket = (userData) => {
         if (!userData || socket?.connected) return;
-        const newSocket = io(backendURL, {
+        
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.error("No token found, cannot connect socket");
+            return;
+        }
+
+        const newSocket = io(backendURL, { // this creates a new socket connection for the user to the backend
+            // Send JWT token for secure authentication
+            auth: {
+                token: token
+            },
+            // Keep userId in query for backward compatibility (optional)
             query: {
                 userId: userData._id
             },
@@ -101,12 +111,11 @@ export const AuthProvider = ({ children }) => {
         setSocket(newSocket);
 
         newSocket.on("getOnlineUsers", (userIds) => {
-            // server should emit an array of userIds; coerce and log for debugging
+            // server should emit an array of userIds;
             console.debug("getOnlineUsers payload:", userIds);
             if (Array.isArray(userIds)) {
                 setOnlineUsers(userIds);
             } else if (userIds && typeof userIds === 'object') {
-                // if server accidentally sends an object, try to extract keys
                 try {
                     setOnlineUsers(Array.from(Object.keys(userIds)));
                 } catch (e) {
@@ -117,12 +126,27 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
-        newSocket.on('connect_error', (err) => {
-            console.error('Socket connect error', err);
+        newSocket.on('connect_error', (err) => { // Log connection errors
+            console.error('Socket connection failed:', err.message);
+            
+            // Handle authentication errors specifically
+            if (err.message.includes('Authentication error')) {
+                console.error('Socket authentication failed - token may be invalid or expired');
+                // force logout on auth failure
+                logout();
+            }
+        });
+
+        newSocket.on('connect', () => {
+            console.log('Socket connected successfully');
+        });
+
+        newSocket.on('disconnect', (reason) => {
+            console.log('Socket disconnected:', reason);
         });
     }
 
-    useEffect(() => {
+    useEffect(() => { // on initial load, check for token and set axios header
         if (token) {
             localStorage.setItem("token", token);
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -131,7 +155,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const value = {
-        axios,
+        axios, //passing axios because its configured here with baseURL and auth header
         authUser,
         onlineUsers,
         socket,

@@ -45,16 +45,41 @@ const ChatContainer = () => {
   //handle sending an image
   const handleSendImage = async (e) => {
     const file = e.target.files[0];
-    if (!file || !selectedUser || !file.type.startsWith("image/")) {
-      toast.error("Please select a valid image file");
+
+    // Basic validation
+    if (!file || !selectedUser) {
+      toast.error("Please select a file and user");
+      return;
+    }
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    // File validation
+    if (!file.type.startsWith("image/") || file.size > maxSize) {
+      toast.error("Please select a valid image file within 5MB");
+      e.target.value = null; // Reset input on invalid file
       return;
     }
 
-    const formData = new FormData();
-    formData.append('image', file);
+    // Prevent image upload to AI assistant
+    if (selectedUser._id === import.meta.env.VITE_AI_ASSISTANT_ID) {
+      toast.error("Image upload is disabled for AI Assistant");
+      e.target.value = null;
+      return;
+    }
 
-    await sendMessage(formData, true); // Pass true to indicate this is FormData
-    e.target.value = null; //reset the input
+    try {
+      const loadingToast = toast.loading("Uploading image...");
+
+      const formData = new FormData();
+      formData.append('image', file);
+      await sendMessage(formData);
+      toast.success("Image sent successfully", { id: loadingToast });
+
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      e.target.value = null;
+    }
   }
 
   useEffect(() => {

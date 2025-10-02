@@ -30,15 +30,13 @@ const Sidebar = () => {
         getUsers();
     }, [onlineUsers]);
 
-
+    const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            setHide(false);
+        }
+    };
     // Close dropdown when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setHide(false);
-            }
-        };
-
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -84,12 +82,11 @@ const Sidebar = () => {
 
             {/* Users List */}
             <div className='flex flex-col overflow-y-auto h-[calc(100%-120px)]'>
-                {/*--------------------- AI Assistant (Always at top) ------------------------------- */}
+                {/*--------------------- AI Assistant (at top) ------------------------------- */}
                 {aiAssistant && (
                     <div
                         onClick={() => {
                             setSelectedUser(aiAssistant);
-                            // setUnseenMessages(prev => ({ ...prev, [aiAssistant._id]: 0 }));
                         }}
                         className={`relative flex items-center gap-2 p-2 mx-2 my-0.5 rounded-lg cursor-pointer hover:bg-gray-700/30 transition-all duration-200 ${selectedUser?._id === aiAssistant._id ? "bg-blue-500/20 border-l-4 border-blue-500" : ""}`}
                     >
@@ -100,12 +97,9 @@ const Sidebar = () => {
 
                         <div className='flex-1 min-w-0'>
                             <div className='flex items-center justify-between'>
-                                <p className='font-medium text-sm truncate'> {aiAssistant.fullName}</p>
-                                {/* {unseenMessages[aiAssistant._id] > 0 && (
-                                    <span className='bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none'>
-                                        {unseenMessages[aiAssistant._id]}
-                                    </span>
-                                )} */}
+                                <p className='font-medium text-sm truncate'> {aiAssistant.fullName} </p>
+                                <i className="fi fi-ss-thumbtack text-sm"></i>
+
                             </div>
                             <p className='text-xs text-green-400'>Always Online</p>
                         </div>

@@ -33,12 +33,12 @@ const App = () => {
           rotation={0.0}
         />
       </div>
-      
+
       {/* Global Version Indicator */}
       <div className='fixed top-2 left-2 z-50 text-white/20 text-sm font-mono pointer-events-none'>
-       the-AVC
+        the-AVC
       </div>
-      
+
       <Toaster />
       <Routes>
         <Route path='/' element={authUser ? <HomePage /> : <Navigate to="/login" />} />
@@ -48,8 +48,8 @@ const App = () => {
       </Routes>
 
       <div className='absolute bottom-2 font-mono right-4 text-white/20 text-xs pointer-events-none'>
-              © 2025 Chatspace v2.0. All rights reserved.
-            </div>
+        © 2025 Chatspace v2.0. All rights reserved.
+      </div>
     </>
   )
 }

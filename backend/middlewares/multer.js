@@ -1,8 +1,23 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+
+// Ensure temp directory exists
+const tempDir = './public/temp';
+if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+}
 
 // Configure storage
-const storage = multer.memoryStorage(); // Store files in memory for direct upload to cloudinary
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, './public/temp');
+    },
+    filename: function(req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+}); // Store files in memory for direct upload to cloudinary
 
 // File filter function
 const fileFilter = (req, file, cb) => {

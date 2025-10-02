@@ -14,6 +14,5 @@ export function formatTimestamp(timestamp) {
         hour12: true
     });
 
-    // Return time only for today, date + time for older messages
     return isToday ? timeString : `${date.toLocaleDateString('en-US')} ${timeString}`;
 }
