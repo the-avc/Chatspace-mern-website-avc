@@ -18,7 +18,11 @@ export const verifyToken = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+        console.error(error);
+        // Distinguish auth errors from server errors
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        res.status(500).json({ message: 'Server error' });
     }
 }
