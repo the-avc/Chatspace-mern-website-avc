@@ -108,29 +108,7 @@ chat-app/
     └── public/                # Public assets
 ```
 
-## 🚀 API Endpoints
-
-```http
-# Public endpoints
-POST /api/auth/signup
-POST /api/auth/login
-
-# Protected endpoints (require Authorization: Bearer <token>)
-PUT /api/auth/update-profile
-GET /api/auth/get-profile
-```
-```http
-GET /api/messages/users          # Get all users for sidebar
-GET /api/messages/:userId        # Get chat history with user
-POST /api/messages/send/:userId  # Send message to user
-PUT /api/messages/seen/:msgId    # Mark message as read
-```
-```http
-POST /api/ai/chat                 # Chat with AI assistant
-POST /api/ai/limiter              # AI Assistant usage (for admin)              
-GET /api/ai/limiter              # AI Assistant usage (for admin)              
-```
-## 📡 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/signup` - Register new user
@@ -151,7 +129,7 @@ GET /api/ai/limiter              # AI Assistant usage (for admin)
 
 **Note:** Protected endpoints require `Authorization: Bearer <token>` header.
 
-## �🛠️ Installation & Setup
+## � Installation & Setup
 
 ### Backend Setup
 
