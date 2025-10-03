@@ -1,34 +1,26 @@
 # ChatSpace - Modern MERN Stack Chat Application 💬
 
-A full-featured real-tim   ├── lib/                   # Utility libraries
-   │   ├── cloudinary.js      # Cloudinary upload with cleanup utilities
-   │   ├── db.js              # MongoDB connection
-   │   └── util.js            # JWT utilities ├── middlewares/           # Express middlewares
-   │   ├── auth.js            # JWT verification (HTTP + Socket.IO)
-   │   └── multer.js          # DiskStorage file upload handlingt application built with the MERN stack, featuring AI integration, advanced UI components, and comprehensive multimedia support.
+A full-featured real-time application built with the MERN stack, featuring AI integration, advanced UI components, and media support.
 
-<!-- ![Chat Application](https://img.shields.io/badge/Chat-Application-blue) ![MERN Stack](https://img.shields.io/badge/Stack-MERN-green) ![Real-time](https://img.shields.io/badge/Real--time-Socket.IO-orange) -->
+![Chat Application](https://img.shields.io/badge/Chat-Application-blue) ![MERN Stack](https://img.shields.io/badge/Stack-MERN-green) ![Real-time](https://img.shields.io/badge/Real--time-Socket.IO-orange)
 
 ## ✨ Features
-
 ### Core Functionality
-- 🔐 **Secure JWT Authentication** - Complete user registration/login with Socket.IO JWT verification
-- 💬 **Real-time Messaging** - Instant messaging with authenticated Socket.IO connections
-- 📸 **Advanced Media Support** - Secure image uploads with validation (5MB limit, multiple formats)
-- 👥 **Profile Management** - Enhanced profile updates with avatar upload and form validation
-- ✅ **Message Status Tracking** - Read receipts and message seen indicators
-- 🌐 **Real-time Presence** - Authenticated user online/offline status with secure socket mapping
+-  **Secure JWT Authentication** - Complete user registration/login with Socket.IO JWT verification
+-  **Real-time Messaging** - Instant messaging with authenticated Socket.IO connections
+-  **Advanced Media Support** - image uploads with validation (5MB limit, multiple formats)
+-  **Profile Management** - Enhanced profile updates with avatar upload 
+-  **Real-time Presence** - Authenticated user online/offline status with secure socket mapping
 
 ### Advanced Features
-- 🤖 **AI Assistant Integration** - Secure chat with AI using Groq SDK
-- 🎨 **Rich UI Components** - Custom React components with smooth animations and loading states
-- ☁️ **Optimized Cloud Storage** - DiskStorage + Cloudinary with automatic cleanup and error handling
-- 📱 **Enhanced Responsive Design** - Mobile-first with improved form validation and user feedback
-- 🎭 **Interactive Visual Effects** - Multiple animated UI components with performance optimizations
-- 🛡️ **Production-Ready Security** - Comprehensive input validation, file type checking, and memory management
+-  **AI Assistant Integration** - Secure chat with AI using Groq SDK
+- **AI Usage handling by Admin** - Admin can set the usage of AI for all users
+-  **Rich UI Components** - Added background and text animations using react-bits
+-  **Optimized Cloud Storage** - DiskStorage + Cloudinary with automatic cleanup
+-  **Production-Ready Security** - Comprehensive input validation, file type checking, and memory management
 
 ### Tech Stack
-- **Frontend**: React 19 + Vite + TailwindCSS
+- **Frontend**: React + Vite + TailwindCSS
 - **Backend**: Node.js + Express + Socket.IO
 - **Database**: MongoDB with Mongoose ODM  
 - **Authentication**: JWT with bcryptjs
@@ -38,24 +30,19 @@ A full-featured real-tim   ├── lib/                   # Utility libraries
 
 ## ✅ Recent Security & Performance Improvements
 
-### 🔒 Security Enhancements (Recently Fixed)
-- ✅ **Socket Authentication Secured** - JWT verification in Socket.IO middleware with database user validation
+### Enhancements (Recently Fixed)
+- ✅ **Socket Authentication Secured** - JWT verification in Socket.IO middleware with database user validation. Every socket connection is validated against JWT + database, ensuring only logged-in users participate
 - ✅ **Enhanced File Upload Security** - Comprehensive client & server-side validation (5MB limit, type checking)
-- ✅ **Memory Leak Prevention** - Proper URL.createObjectURL cleanup and diskStorage implementation
-- ✅ **Input Validation** - Enhanced form validation with user feedback and error handling
-- ✅ **FormData Optimization** - Replaced base64 uploads with proper multipart/form-data handling
+- ✅ **FormData Optimization** - Replaced base64 uploads with proper multipart/form-data handling. Base64 encoding increases file size by ~33%, consuming more bandwidth and memory.
 
-### 🚀 Performance Optimizations (Recently Implemented)
-- ✅ **DiskStorage Migration** - Switched from memoryStorage to diskStorage for better scalability
+- ✅ **DiskStorage Migration** - Switched from memoryStorage to diskStorage for better scalability.Multiple simultaneous uploads could exhaust server memory. No cleanup = disk space leak
 - ✅ **Automatic File Cleanup** - Temporary files automatically removed after Cloudinary upload
-- ✅ **Smart Component Updates** - Optimized React re-renders and scroll behavior
-- ✅ **Loading States** - Comprehensive UI feedback during uploads and operations
+- ✅ **Admin AI Control** - Admin can disable AI globally from settings. Reduces API costs when not needed
 
 ## ⚠️ Remaining Areas for Enhancement
 
 ### Medium Priority Issues
 - **CORS Configuration** - Currently allows all origins (`*`), should restrict to specific domains in production
-- **AI Route Consistency** - Backend uses `/chat` while frontend calls `/api/ai/ask` endpoint
 - **Multi-device Support** - `userSocketMap` stores one socket per user; consider supporting multiple connections
 - **Rate Limiting** - Add `express-rate-limit` to upload and authentication endpoints
 
@@ -63,7 +50,6 @@ A full-featured real-tim   ├── lib/                   # Utility libraries
 - **Refresh Token Flow** - Currently uses access tokens only; consider refresh token implementation
 - **Presence Scaling** - In-memory presence won't scale across multiple instances (needs Redis adapter)
 - **Error Response Standardization** - Some endpoints return different error formats
-- **Advanced File Scanning** - Consider malware scanning for uploaded files in high-security environments
 
 ## �📁 Project Structure
 
@@ -77,8 +63,8 @@ chat-app/
 │   ├── package.json           # Backend dependencies
 │   ├── vercel.json            # Vercel deployment config
 │   ├── controllers/           # Business logic
-│   │   ├── ai-controllers.js  # AI chat functionality
-│   │   ├── message-controllers.js
+│   │   ├── ai-controllers.js  
+│   │   ├── message-controllers.js 
 │   │   └── user-controllers.js
 │   ├── lib/                   # Utility libraries
 │   │   ├── cloudinary.js      # Cloudinary configuration
@@ -91,7 +77,7 @@ chat-app/
 │   │   ├── message-model.js
 │   │   └── user-model.js
 │   └── routes/                # API routes
-│       ├── ai-routes.js       # AI assistant endpoints
+│       ├── ai-routes.js       endpoints
 │       ├── messages-routes.js
 │       └── user-routes.js
 └── frontend/                  # React application
@@ -99,16 +85,12 @@ chat-app/
     ├── vite.config.js         # Vite configuration
     ├── vercel.json            # Vercel deployment config
     ├── context/               # React contexts
-    │   ├── AuthContext.jsx    # Authentication state
+    │   ├── AuthContext.jsx    # Authentication state management
+    │   ├── AiContext.jsx      # AI assistant state management
     │   └── ChatContext.jsx    # Chat state management
     ├── react-bits/            # Custom UI components
-    │   ├── Aurora/            # Aurora effect component
-    │   ├── Galaxy/            # Galaxy background
-    │   ├── GradientBlinds/    # Gradient animations
-    │   ├── Hyperspeed/        # Speed effect
-    │   ├── LetterGlitch/      # Text glitch effect
-    │   ├── LiquidEther/       # Liquid animations
-    │   └── ... (more components)
+    │   ├── Silk/              # Silk effect component
+    │   └── TextType/          # TextType effect component
     ├── src/
     │   ├── App.jsx            # Main app component
     │   ├── components/        # Core components
@@ -128,7 +110,6 @@ chat-app/
 
 ## 🚀 API Endpoints
 
-### Authentication Endpoints
 ```http
 # Public endpoints
 POST /api/auth/signup
@@ -138,68 +119,49 @@ POST /api/auth/login
 PUT /api/auth/update-profile
 GET /api/auth/get-profile
 ```
-
-### Message Endpoints (Protected)
 ```http
 GET /api/messages/users          # Get all users for sidebar
 GET /api/messages/:userId        # Get chat history with user
 POST /api/messages/send/:userId  # Send message to user
 PUT /api/messages/seen/:msgId    # Mark message as read
 ```
-
-### AI Assistant Endpoints (Protected)
 ```http
-POST /api/ai/ask                 # Chat with AI assistant
+POST /api/ai/chat                 # Chat with AI assistant
+POST /api/ai/limiter              # AI Assistant usage (for admin)              
+GET /api/ai/limiter              # AI Assistant usage (for admin)              
 ```
+## 📡 API Endpoints
 
-## � Technical Implementation Details
+### Authentication
+- `POST /api/auth/signup` - Register new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/get-profile` - Get current user (protected)
+- `PUT /api/auth/update-profile` - Update profile with avatar (protected)
 
-### Socket.IO Authentication Flow
-```javascript
-// JWT verification in Socket.IO middleware
-io.use(socketAuthMiddleware); // Verifies JWT and attaches user data
-// User authentication required for all socket connections
-```
+### Messages (Protected)
+- `GET /api/messages/users` - Get all users for sidebar
+- `GET /api/messages/:userId` - Get conversation history
+- `POST /api/messages/send/:userId` - Send message (text/image)
+- `PUT /api/messages/seen/:msgId` - Mark message as read
 
-### File Upload Architecture
-```javascript
-// DiskStorage → Cloudinary → Cleanup Pipeline
-multer.diskStorage() → cloudinary.upload() → fs.unlink()
-// Automatic temporary file cleanup after cloud upload
-```
+### AI Assistant (Protected)
+- `POST /api/ai/ask` - Send message to AI (requires aiEnabled=true)
+- `PUT /api/ai/limiter` - Toggle AI globally (admin only)
+- `GET /api/ai/limiter` - Get the AI availability status
 
-### Security Layers
-1. **Frontend Validation** - File type, size, format checking
-2. **Backend Validation** - Server-side file verification  
-3. **JWT Socket Auth** - Database user verification for WebSocket connections
-4. **FormData Handling** - Efficient multipart uploads (no base64 overhead)
-5. **Memory Management** - Automatic cleanup of resources and object URLs
+**Note:** Protected endpoints require `Authorization: Bearer <token>` header.
 
 ## �🛠️ Installation & Setup
 
-### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB database
-- Cloudinary account
-- Groq API key (for AI features)
-
 ### Backend Setup
 
-1. **Navigate to backend directory**
+1. **Navigate and install dependencies**
    ```powershell
    cd backend
-   ```
-
-2. **Install dependencies**
-   ```powershell
    npm install
    ```
-
-3. **Create environment file**
+2. **Create environment file**
    ```powershell
-   # Create .env file with the following variables:
-   ```
-   ```env
    # Server Configuration
    PORT=5000
    
@@ -219,62 +181,35 @@ multer.diskStorage() → cloudinary.upload() → fs.unlink()
    # AI Configuration
    GROQ_API_KEY=your-groq-api-key
    AI_ASSISTANT_ID=ai-assistant-unique-id
-   ```
+   AI_ENABLED=true
 
-4. **Start the backend server**
+   #Admin Configuration
+   ADMIN_ID=admin-unique-id
+   ```
+3. **Start the backend server**
    ```powershell
    npm start
-   # or for development with auto-reload:
-   npx nodemon server.js
+   npx nodemon
    ```
 
 ### Frontend Setup
 
-1. **Navigate to frontend directory**
+1. **Navigate and install dependencies**
    ```powershell
    cd frontend
-   ```
-
-2. **Install dependencies**
-   ```powershell
    npm install
    ```
-
+2. **Create environment file**
+   ```powershell
+   VITE_BACKEND_URL='http://localhost:5000'
+   VITE_ADMIN_ID=admin-unique-id
+   VITE_AI_ASSISTANT_ID=ai-assistant-unique-id
+   VITE_AI_ENABLED=true
+   ```
 3. **Start the development server**
    ```powershell
    npm run dev
    ```
-
-4. **Build for production**
-   ```powershell
-   npm run build
-   ```
-
-## 🔒 Security Considerations
-
-### Current Security Implementations
-- ✅ **Password Security** - bcryptjs hashing with salt rounds
-- ✅ **JWT Authentication** - Access tokens with Socket.IO integration and database verification
-- ✅ **File Upload Security** - Multi-layer validation (client + server), type checking, size limits (5MB)
-- ✅ **Memory Management** - Proper cleanup of temporary files and object URLs
-- ✅ **Input Validation** - Comprehensive form validation with user feedback
-- ✅ **CORS Configuration** - Cross-origin resource sharing setup
-- ✅ **Error Handling** - Graceful error handling with user-friendly messages
-- ✅ **DiskStorage** - Secure temporary file handling with automatic cleanup
-
-### Security Best Practices Implemented
-- Socket authentication with JWT verification
-- FormData handling instead of base64 for large files
-- Client-side and server-side file validation
-- Automatic resource cleanup and memory leak prevention
-- Protected API endpoints with middleware authentication
-
-3. **Environment Variables**: Set all required environment variables in Vercel dashboard
-
-### Alternative Deployment Options
-- **Backend**: Railway, Render, DigitalOcean
-- **Frontend**: Netlify, GitHub Pages, Firebase Hosting
-- **Database**: MongoDB Atlas (recommended for production)
 
 ## 🤝 Contributing
 
@@ -285,17 +220,7 @@ multer.diskStorage() → cloudinary.upload() → fs.unlink()
 5. Submit a pull request
 
 ## 📄 License
-
 This project is licensed under the ISC License.
-
-## 🎯 Key Achievements
-
-This application successfully implements:
-- ✅ **Production-Ready Security** - JWT Socket authentication, comprehensive file validation
-- ✅ **Scalable Architecture** - DiskStorage with cloud integration and automatic cleanup
-- ✅ **Excellent UX** - Loading states, error handling, form validation with user feedback
-- ✅ **Memory Efficiency** - Proper resource management and leak prevention
-- ✅ **Modern Best Practices** - FormData uploads, optimized React patterns, secure API design
 
 ## 🙏 Acknowledgments
 
@@ -311,7 +236,8 @@ This application successfully implements:
 
 *Recent major updates: Socket authentication security, DiskStorage implementation, enhanced file handling, and comprehensive input validation.*
 
-For detailed implementation guides, check out:
-- `multerchat.md` - Advanced Multer diskStorage implementation
-- `socketchat.md` - Secure Socket.IO real-time features
+## 📚 Additional Documentation
+For detailed implementation notes, see:
+- [`multerchat.md`](multerchat.md) - File upload implementation details
+- [`socketchat.md`](socketchat.md) - Socket.IO authentication guide
 
