@@ -1,6 +1,7 @@
 import Groq from "groq-sdk";
 import { Message } from "../models/message-model.js";
 import { User } from "../models/user-model.js";
+import { io } from "../server.js";
 
 // Initial load from env variable (env vars are strings)
 let aiEnabled = String(process.env.AI_ENABLED || '').toLowerCase() === 'true';
@@ -120,6 +121,11 @@ export const toggleAiStatus = async (req, res) => {
 
 		aiEnabled = enabled;
 		await User.findByIdAndUpdate(process.env.AI_ASSISTANT_ID, { enabled });
+		try {
+			io.emit("aiStatusChanged", aiEnabled);
+		} catch (error) {
+			console.error("Socket aiStatus error:", error);
+		}
 		return res.json({ success: true, enabled });
 	} catch (error) {
 		console.error("AI toggle error:", error);

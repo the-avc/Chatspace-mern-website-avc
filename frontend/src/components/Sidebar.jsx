@@ -125,7 +125,8 @@ const Sidebar = () => {
                         </div>
 
                         <div className='flex-1 min-w-0'>
-                            <div className='flex items-center justify-between'>
+                            <div className='flex items-center justify-between'
+                                title={String(user._id) === String(import.meta.env.VITE_ADMIN_ID) && "Admin"}>
                                 <p className='font-medium text-sm truncate'>{user.fullName}</p>
                                 {unseenMessages[user._id] > 0 && (
                                     <span className='bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none'>

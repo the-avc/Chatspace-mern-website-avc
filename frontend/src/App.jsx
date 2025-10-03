@@ -29,8 +29,8 @@ const App = () => {
           speed={2.2}
           scale={1}
           color={currentColor}
-          noiseIntensity={1.5}
-          rotation={0.0}
+          noiseIntensity={1.0}
+          rotation={1.0}
         />
       </div>
 

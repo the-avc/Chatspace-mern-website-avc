@@ -118,15 +118,23 @@ const ChatContainer = () => {
     <div className='h-full overflow-scroll relative backdrop-blur-lg'>
 
       {/* -------------------HEADER-------------------------------------  */}
-      <div className='flex items-center gap-3 py-3 mx-4 border-b border-stone-500'>
-        <img src={selectedUser.profilePic || assets.avatar_icon} alt="" className='w-8 h-8 rounded-full object-cover mt-auto' />
-        <p className='flex-1 text-lg text-white flex items-center gap-2'>
-          {selectedUser.fullName}
-          {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
-        </p>
+      <div className='flex items-center gap-2 py-2 mx-3 border-b border-stone-500'>
+        <img src={selectedUser.profilePic || assets.avatar_icon} alt="" className='w-8 h-8 rounded-full object-cover'
+          onClick={() => window.open(selectedUser.profilePic)}
+        />
+
+        <div className='flex-1 flex flex-col'>
+          <div className='flex-1 text-white text-base flex items-center gap-2'
+            title={String(selectedUser._id) === String(import.meta.env.VITE_ADMIN_ID) && "Admin"}>
+            {selectedUser.fullName}
+            {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
+          </div>
+          <span className='text-sm text-gray-400 italic'>{selectedUser.bio}</span>
+        </div>
+
 
         {/* Admin-only AI toggle */}
-        {authUser && String(authUser._id) === String(import.meta.env.VITE_ADMIN_ID) && (
+        {authUser && String(authUser._id) === String(import.meta.env.VITE_ADMIN_ID) && String(selectedUser._id) === String(import.meta.env.VITE_AI_ASSISTANT_ID) && (
           <div className='flex items-center gap-2 text-sm text-white'>
             <button
               className={`px-2 py-1 rounded ${aiEnabled ? 'bg-green-500' : 'bg-gray-600'}`}

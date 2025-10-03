@@ -42,7 +42,7 @@ const ProfilePage = () => {
 
       await updateProfile(formDataToSend);
       toast.success('Profile updated successfully!');
-      navigate('/');
+      navigate('/'); //redirect
     } catch (error) {
       console.error('Profile update error:', error);
       toast.error('Failed to update profile. Please try again.');

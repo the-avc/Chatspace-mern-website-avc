@@ -24,7 +24,9 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || "Authentication failed";
-            console.log("Error checking auth", error);
+            console.log("Error checking auth", errorMessage);
+            toast.error("Session expired, please login again");
+            logout();
         }
     };
 
@@ -90,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     //connect socket to handle real-time events
     const connectSocket = (userData) => {
         if (!userData || socket?.connected) return;
-        
+
         const token = localStorage.getItem("token");
         if (!token) {
             console.error("No token found, cannot connect socket");
@@ -128,7 +130,7 @@ export const AuthProvider = ({ children }) => {
 
         newSocket.on('connect_error', (err) => { // Log connection errors
             console.error('Socket connection failed:', err.message);
-            
+
             // Handle authentication errors specifically
             if (err.message.includes('Authentication error')) {
                 console.error('Socket authentication failed - token may be invalid or expired');
