@@ -1,8 +1,10 @@
-import React, { useContext, useState } from 'react'
+import React, { Suspense, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext';
 import { assets } from '../assets/assets';
-import TextType from '../../react-bits/TextType/TextType';
+// import TextType from '../../react-bits/TextType/TextType';
+
+const TextType = React.lazy(() => import('../../react-bits/TextType/TextType'));
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -41,19 +43,26 @@ const LoginPage = () => {
         <div className='hidden md:flex md:flex-1 bg-gradient-to-br items-center justify-center bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6'>
           <div className='text-center'>
             <div className='flex items-center justify-center gap-4 mb-6'>
-              <img src={assets.logo} alt="" className='w-88 rounded-md flex items-center justify-center' />
+              <img
+                src={assets.logo}
+                alt="logo"
+                className='w-88 rounded-md flex items-center justify-center'
+                loading='lazy' />
               {/* <h1 className='text-4xl font-bold text-white'>Chatspace</h1> */}
             </div>
             <div className='text-white text-xl mb-8 font-medium'>
-              Connect with <TextType
-                text={["friends", "families", "colleagues", "Alison A.I.", "many more!"]}
-                typingSpeed={100}
-                deletingSpeed={40}
-                pauseDuration={2000}
-                showCursor={true}
-                cursorCharacter="|"
-                className='inline-block'
-              />
+              Connect with
+              <Suspense fallback={<span className='inline-block ml-2'>...</span>}>
+                <TextType
+                  text={["friends", "families", "colleagues", "Alison A.I.", "many more!"]}
+                  typingSpeed={100}
+                  deletingSpeed={40}
+                  pauseDuration={2000}
+                  showCursor={true}
+                  cursorCharacter="|"
+                  className='inline-block'
+                />
+              </Suspense>
             </div>
             <div className='space-y-4 text-blue-100'>
               <div className='flex items-center gap-3'>

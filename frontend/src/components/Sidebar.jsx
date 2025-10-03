@@ -119,7 +119,11 @@ const Sidebar = () => {
                             }`}
                     >
                         <div className='relative'>
-                            <img src={user?.profilePic || assets.avatar_icon} alt="" className='w-10 h-10 rounded-full object-cover border border-gray-600' />
+                            <img
+                                src={user?.profilePic || assets.avatar_icon}
+                                srcSet={`${user?.profilePic || assets.avatar_icon} 1x, ${user?.profilePic || assets.avatar_icon} 2x`}
+                                alt="userProfile"
+                                className='w-10 h-10 rounded-full object-cover border border-gray-600' />
                             <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border border-gray-800 ${onlineUsers.includes(user._id) ? 'bg-green-500' : 'bg-gray-500'
                                 }`}></div>
                         </div>

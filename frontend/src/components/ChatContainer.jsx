@@ -119,7 +119,11 @@ const ChatContainer = () => {
 
       {/* -------------------HEADER-------------------------------------  */}
       <div className='flex items-center gap-2 py-2 mx-3 border-b border-stone-500'>
-        <img src={selectedUser.profilePic || assets.avatar_icon} alt="" className='w-8 h-8 rounded-full object-cover'
+        <img
+          src={selectedUser.profilePic || assets.avatar_icon}
+          srcSet={`${selectedUser.profilePic || assets.avatar_icon} 1x, ${selectedUser.profilePic || assets.avatar_icon} 2x`}
+          alt="userProfile"
+          className='w-8 h-8 rounded-full object-cover'
           onClick={() => window.open(selectedUser.profilePic)}
         />
 
@@ -168,7 +172,7 @@ const ChatContainer = () => {
 
               <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
                 {msg.image && (
-                  <img src={msg.image} alt="" className='max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-2 cursor-pointer'
+                  <img src={msg.image} alt="msgImg" className='max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-2 cursor-pointer'
                     onClick={() => window.open(msg.image)}
                   />
                 )}
