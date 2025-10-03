@@ -1,27 +1,45 @@
-# Socket.IO Implementation for Real-Time Chat - ChatSpace App
+# Socket.IO Real-Time Chat Implementation - ChatSpace
 
-This document explains the comprehensive Socket.IO implementation for real-time messaging in the ChatSpace application. The implementation covers both backend and frontend socket handling with detailed code explanations.
+This document provides a comprehensive explanation of the Socket.IO implementation in your ChatSpace application, covering real-time messaging, online user tracking, and secure authentication.
 
 ## Table of Contents
-1. [Backend Socket Implementation](#backend-socket-implementation)
-2. [Frontend Socket Implementation](#frontend-socket-implementation)
-3. [Socket Event Flow](#socket-event-flow)
-4. [Real-Time Message Broadcasting](#real-time-message-broadcasting)
-5. [Online User Management](#online-user-management)
-6. [Socket Connection Lifecycle](#socket-connection-lifecycle)
+1. [Architecture Overview](#architecture-overview)
+2. [Backend Implementation](#backend-implementation)
+3. [Frontend Implementation](#frontend-implementation)
+4. [Socket Authentication](#socket-authentication)
+5. [Message Broadcasting](#message-broadcasting)
+6. [Online User Management](#online-user-management)
+7. [Socket Event Flow](#socket-event-flow)
 
 ---
 
-## Backend Socket Implementation
+## Architecture Overview
 
-### 1. Server Setup and Socket.IO Initialization (`backend/server.js`)
+Your ChatSpace socket system implements:
+
+- **Secure Authentication**: JWT-based socket authentication middleware
+- **Real-Time Messaging**: Instant message delivery between users
+- **Online Presence**: Live tracking of connected users
+- **Targeted Broadcasting**: Point-to-point message delivery
+- **Offline Handling**: Message persistence for offline users
+
+---
+
+## Backend Implementation
+
+### 1. Server Setup and Initialization
+
+#### File: `backend/server.js`
 
 ```javascript
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import http from 'http';
+import jwt from 'jsonwebtoken';
 import { connectDB } from './lib/db.js';
+import { User } from './models/user-model.js';
+import { verifySocket } from './middlewares/auth.js';
 import userRouter from './routes/user-routes.js';
 import messageRouter from './routes/messages-routes.js';
 import aiRouter from "./routes/ai-routes.js";
@@ -40,41 +58,43 @@ export const io = new Server(server, {
         methods: ["GET", "POST", "PATCH"]
     }
 });
-```
 
-**Code Explanation:**
-
-**HTTP Server Creation:**
-```javascript
-const server = http.createServer(app);
-```
-- **Purpose**: Creates an HTTP server instance that wraps the Express app
-- **Why needed**: Socket.IO requires an HTTP server instance to attach to, not just the Express app
-- **Behind the scenes**: This creates a Node.js HTTP server that can handle both regular HTTP requests and WebSocket connections
-
-**Socket.IO Server Initialization:**
-```javascript
-export const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST", "PATCH"]
-    }
-});
-```
-- **Server instance**: Attaches Socket.IO to the HTTP server
-- **CORS configuration**: Allows cross-origin requests from any domain (`origin: "*"`)
-- **Methods**: Specifies allowed HTTP methods for the socket connection
-- **Export**: Makes the `io` instance available for other modules to emit events
-
-### 2. Online User Management System
-
-```javascript
 //store online users
 export const userSocketMap = new Map(); //key:userId value:socketId
 
+// Use socket authentication middleware
+io.use(verifySocket);
+```
+
+**What This Setup Does:**
+
+1. **HTTP Server Creation**: 
+   - Wraps Express app in HTTP server for Socket.IO compatibility
+   - Enables handling of both HTTP requests and WebSocket connections
+
+2. **Socket.IO Server Initialization**:
+   - Creates Socket.IO server with CORS configuration
+   - Allows cross-origin connections from frontend
+   - Exports `io` instance for use in controllers
+
+3. **User Mapping Storage**:
+   - `userSocketMap` stores userId → socketId relationships
+   - Enables targeted message delivery to specific users
+   - Provides O(1) lookup performance
+
+4. **Authentication Middleware**:
+   - Applies JWT authentication to all socket connections
+   - Ensures only authenticated users can connect
+   - Validates tokens before allowing real-time communication
+
+### 2. Connection Management
+
+```javascript
 io.on("connection", (socket) => {
-    const userId = socket.handshake.query.userId;
-    console.log("User connected with ID:", userId);
+    // Use verified userId from authentication middleware
+    const userId = socket.userId;
+    console.log(`User connected: ${socket.user.fullName} (${userId})`);
+
     if (userId) {
         userSocketMap.set(userId, socket.id);
     }
@@ -82,92 +102,119 @@ io.on("connection", (socket) => {
     io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
 
     socket.on("disconnect", () => {
-        console.log("User disconnected with ID:", userId);
+        console.log(`User disconnected: ${socket.user.fullName} (${userId})`);
         if (userId) {
             userSocketMap.delete(userId);
         }
-    //emit event to all connected users (convert Map keys to array)
-    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+        //emit event to all connected users (convert Map keys to array)
+        io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
     });
 });
 ```
 
-**Code Explanation:**
+**Connection Process:**
 
-**User-Socket Mapping:**
-```javascript
-export const userSocketMap = new Map(); //key:userId value:socketId
-```
-- **Data structure**: Map provides O(1) lookup time for user-socket relationships
-- **Key**: MongoDB user ID (string)
-- **Value**: Socket.IO generated socket ID (string)
-- **Purpose**: Enables targeted message delivery to specific users
-- **Export**: Makes the map accessible to message controllers for event emission
+1. **Authenticated Connection**: Uses pre-validated user data from auth middleware
+2. **User Mapping**: Associates user ID with socket ID for message targeting
+3. **Online Broadcasting**: Notifies all clients when users connect/disconnect
+4. **Cleanup**: Removes disconnected users from mapping to prevent memory leaks
 
-**Connection Event Handler:**
+---
+
+## Socket Authentication
+
+### Authentication Middleware
+
+#### File: `backend/middlewares/auth.js`
+
 ```javascript
-io.on("connection", (socket) => {
-    const userId = socket.handshake.query.userId;
-    console.log("User connected with ID:", userId);
-    if (userId) {
-        userSocketMap.set(userId, socket.id);
+export const verifySocket = async (socket, next) => {
+    try {
+        // Get token from auth payload (preferred) or query params
+        const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+
+        if (!token) {
+            console.log("Socket connection rejected: No token provided");
+            return next(new Error("Authentication error: No token provided"));
+        }
+
+        // Verify JWT token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        if (!decoded) {
+            console.log("Socket connection rejected: Invalid token");
+            return next(new Error("Authentication error: Invalid token"));
+        }
+
+        // Get user from database
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            console.log("Socket connection rejected: User not found");
+            return next(new Error("Authentication error: User not found"));
+        }
+
+        socket.userId = user._id.toString();
+        socket.user = user;
+        console.log(`Socket authenticated for user: ${user.fullName} (${user._id})`);
+        next();
+    } catch (error) {
+        console.log("Socket authentication error:", error.message);
+        next(new Error("Authentication error: " + error.message));
     }
-    //emit event to all connected users (convert Map keys to array)
-    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+}
 ```
 
-**Socket Handshake Analysis:**
-- **socket.handshake.query**: Contains query parameters sent during connection
-- **userId extraction**: Client sends userId as a query parameter during connection
-- **Validation**: Checks if userId exists before mapping
-- **Map storage**: Associates user ID with current socket ID
-- **Broadcast update**: Immediately notifies all clients about updated online users list
+**Security Features:**
 
-**Online Users Broadcasting:**
-```javascript
-io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
-```
-- **io.emit()**: Broadcasts to ALL connected sockets
-- **Event name**: "getOnlineUsers" - standardized event identifier
-- **Payload**: Array of user IDs currently online
-- **Array.from()**: Converts Map keys to array format
-- **Real-time sync**: All clients receive instant updates when users come online
+- **JWT Token Verification**: Validates token signature and expiration
+- **Database User Lookup**: Ensures user account still exists and is valid
+- **Secure User Attachment**: Stores verified user data on socket object
+- **Error Handling**: Rejects connections with detailed error messages
+- **Token Sources**: Accepts tokens from auth payload or query parameters
 
-**Disconnection Event Handler:**
-```javascript
-socket.on("disconnect", () => {
-    console.log("User disconnected with ID:", userId);
-    if (userId) {
-        userSocketMap.delete(userId);
-    }
-    //emit event to all connected users (convert Map keys to array)
-    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
-});
-```
+**Why This Security is Important:**
+- Prevents unauthorized socket connections
+- Eliminates user impersonation attacks
+- Ensures only valid, active users can send/receive messages
+- Provides audit trail of connection attempts
 
-**Disconnect Cleanup Process:**
-- **Automatic trigger**: Socket.IO automatically fires "disconnect" when connection is lost
-- **Map cleanup**: Removes user-socket mapping to prevent memory leaks
-- **Broadcast update**: Notifies all remaining users about user going offline
-- **Closure access**: Uses `userId` from parent scope (connection handler)
+---
 
-### 3. Real-Time Message Broadcasting (`backend/controllers/message-controllers.js`)
+## Message Broadcasting
+
+### Real-Time Message Controller
+
+#### File: `backend/controllers/message-controllers.js`
 
 ```javascript
 import { userSocketMap, io } from "../server.js";
 
 export const sendMessage = async (req, res) => {
     try {
-        const { text, image } = req.body;
         const senderId = req.user._id;
+        const { text } = req.body;
         const receiverId = req.params.userId;
 
-        let imageUrl = null;
+        let imageUrl = "";
+        
+        // Handle image upload if present
         if (req.file) {
-            const uploadResponse = await cloudinary.uploader.upload(req.file.path);
-            imageUrl = uploadResponse.secure_url;
+            if (!req.uploadsEnabled && req.file?.path) {
+                try {
+                    await fs.unlinkSync(req.file.path);
+                } catch (e) {
+                    // Ignore errors during file deletion
+                }
+                return res.status(403).json({ success: false, message: "Image uploads are disabled by AVC" });
+            }
+            const uploadResponse = await uploadOnCloudinary(req.file.path);
+            if (uploadResponse) {
+                imageUrl = uploadResponse.secure_url;
+            } else {
+                return res.status(500).json({ success: false, message: "Image upload failed" });
+            }
         }
 
+        // Validate that either text or image is provided
         if (!text && !imageUrl) {
             return res.status(400).json({ success: false, message: "Either text or image is required" });
         }
@@ -178,75 +225,52 @@ export const sendMessage = async (req, res) => {
             text: text || "",
             image: imageUrl
         });
-        
+
         await newMessage.save();
-        
+
         //emit new message to receiver if online
         const receiverSocketId = userSocketMap.get(receiverId);
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage", newMessage);
         }
-        res.status(201).json({success:true,newMessage});
+        res.status(201).json({ success: true, newMessage });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ success:false,message: "Server Error", error });
+        console.log("Send message error:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
 ```
 
-**Code Explanation:**
+**Message Broadcasting Process:**
 
-**Socket Import and Usage:**
-```javascript
-import { userSocketMap, io } from "../server.js";
-```
-- **Imports**: Gets the socket server instance and user mapping from server.js
-- **Purpose**: Enables message controllers to emit real-time events
-- **Decoupling**: Separates socket logic from server initialization
+1. **Database-First Strategy**:
+   - Messages are saved to MongoDB before socket emission
+   - Ensures data persistence even if socket delivery fails
+   - Offline users can retrieve messages when they reconnect
 
-**Message Persistence and Broadcasting:**
-```javascript
-const newMessage = new Message({
-    senderId,
-    receiverId,
-    text: text || "",
-    image: imageUrl
-});
+2. **Targeted Socket Delivery**:
+   ```javascript
+   const receiverSocketId = userSocketMap.get(receiverId);
+   if (receiverSocketId) {
+       io.to(receiverSocketId).emit("newMessage", newMessage);
+   }
+   ```
+   - Looks up receiver's current socket connection
+   - Only sends if user is currently online
+   - Uses point-to-point messaging (not broadcast)
 
-await newMessage.save();
-
-//emit new message to receiver if online
-const receiverSocketId = userSocketMap.get(receiverId);
-if (receiverSocketId) {
-    io.to(receiverSocketId).emit("newMessage", newMessage);
-}
-```
-
-**Database-First Approach:**
-- **Save first**: Message is persisted to MongoDB before broadcasting
-- **Ensures consistency**: Database has the message even if socket emission fails
-- **Includes metadata**: Saved message contains timestamp, ID, and other MongoDB fields
-
-**Targeted Message Delivery:**
-```javascript
-const receiverSocketId = userSocketMap.get(receiverId);
-if (receiverSocketId) {
-    io.to(receiverSocketId).emit("newMessage", newMessage);
-}
-```
-
-**Delivery Process:**
-1. **Lookup**: Finds receiver's current socket ID using their user ID
-2. **Online check**: Only sends if user is currently connected
-3. **Targeted emission**: `io.to(socketId).emit()` sends to specific socket only
-4. **Event payload**: Sends complete message object with all fields
-5. **Offline handling**: If user is offline, message waits in database for next login
+3. **Hybrid Message Support**:
+   - Handles both text and image messages
+   - Integrates with Cloudinary for file uploads
+   - Validates message content before sending
 
 ---
 
-## Frontend Socket Implementation
+## Frontend Implementation
 
-### 1. Socket Connection Management (`frontend/context/AuthContext.jsx`)
+### 1. Socket Context Management
+
+#### File: `frontend/context/AuthContext.jsx`
 
 ```javascript
 import { createContext, useEffect, useState } from "react";
@@ -264,130 +288,75 @@ export const AuthProvider = ({ children }) => {
     const [authUser, setAuthUser] = useState(null);
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [socket, setSocket] = useState(null);
-```
 
-**Code Explanation:**
+    //connect socket to handle real-time events
+    const connectSocket = (userData) => {
+        if (!userData || socket?.connected) return;
 
-**Socket Client Import:**
-```javascript
-import { io } from "socket.io-client";
-```
-- **Client library**: Socket.IO client for establishing WebSocket connections
-- **Browser compatibility**: Handles fallbacks for different browser support
-- **Event handling**: Provides methods for emitting and listening to events
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.error("No token found, cannot connect socket");
+            return;
+        }
 
-**State Management:**
-```javascript
-const [onlineUsers, setOnlineUsers] = useState([]);
-const [socket, setSocket] = useState(null);
-```
-- **onlineUsers**: Array of user IDs currently online (synchronized with server)
-- **socket**: Stores the active socket connection instance
-- **Global state**: Available throughout the app via Context API
+        const newSocket = io(backendURL, {
+            // Send JWT token for secure authentication
+            auth: {
+                token: token
+            },
+            // Keep userId in query for backward compatibility (optional)
+            query: {
+                userId: userData._id
+            },
+        });
+        newSocket.connect();
+        setSocket(newSocket);
 
-### 2. Socket Connection Establishment
-
-```javascript
-//connect socket to handle real-time events
-const connectSocket = (userData) => {
-    if (!userData || socket?.connected) return;
-    const newSocket = io(backendURL, {
-        query: {
-            userId: userData._id
-        },
-    });
-    newSocket.connect();
-    setSocket(newSocket);
-
-    newSocket.on("getOnlineUsers", (userIds) => {
-        // server should emit an array of userIds; coerce and log for debugging
-        console.debug("getOnlineUsers payload:", userIds);
-        if (Array.isArray(userIds)) {
-            setOnlineUsers(userIds);
-        } else if (userIds && typeof userIds === 'object') {
-            // if server accidentally sends an object, try to extract keys
-            try {
-                setOnlineUsers(Array.from(Object.keys(userIds)));
-            } catch (e) {
+        newSocket.on("getOnlineUsers", (userIds) => {
+            console.debug("getOnlineUsers payload:", userIds);
+            if (Array.isArray(userIds)) {
+                setOnlineUsers(userIds);
+            } else if (userIds && typeof userIds === 'object') {
+                try {
+                    setOnlineUsers(Array.from(Object.keys(userIds)));
+                } catch (e) {
+                    setOnlineUsers([]);
+                }
+            } else {
                 setOnlineUsers([]);
             }
-        } else {
-            setOnlineUsers([]);
-        }
-    });
+        });
 
-    newSocket.on('connect_error', (err) => {
-        console.error('Socket connect error', err);
-    });
-}
-```
+        newSocket.on('connect_error', (err) => {
+            console.error('Socket connection failed:', err.message);
+            
+            // Handle authentication errors specifically
+            if (err.message.includes('Authentication error')) {
+                console.error('Socket authentication failed - token may be invalid or expired');
+                // force logout on auth failure
+                logout();
+            }
+        });
 
-**Code Explanation:**
+        newSocket.on('connect', () => {
+            console.log('Socket connected successfully');
+        });
 
-**Connection Guard Clauses:**
-```javascript
-if (!userData || socket?.connected) return;
-```
-- **userData check**: Ensures user is authenticated before connecting
-- **Duplicate prevention**: Prevents multiple socket connections
-- **Optional chaining**: `socket?.connected` safely checks connection status
-
-**Socket Configuration:**
-```javascript
-const newSocket = io(backendURL, {
-    query: {
-        userId: userData._id
-    },
-});
-```
-- **URL specification**: Connects to backend server URL
-- **Query parameters**: Sends user ID during handshake for server identification
-- **Handshake data**: Server receives this in `socket.handshake.query.userId`
-
-**Manual Connection:**
-```javascript
-newSocket.connect();
-setSocket(newSocket);
-```
-- **Explicit connection**: Manually initiates the connection process
-- **State update**: Stores socket instance in React state for global access
-
-**Online Users Synchronization:**
-```javascript
-newSocket.on("getOnlineUsers", (userIds) => {
-    console.debug("getOnlineUsers payload:", userIds);
-    if (Array.isArray(userIds)) {
-        setOnlineUsers(userIds);
-    } else if (userIds && typeof userIds === 'object') {
-        try {
-            setOnlineUsers(Array.from(Object.keys(userIds)));
-        } catch (e) {
-            setOnlineUsers([]);
-        }
-    } else {
-        setOnlineUsers([]);
+        newSocket.on('disconnect', (reason) => {
+            console.log('Socket disconnected:', reason);
+        });
     }
-});
 ```
 
-**Robust Data Handling:**
-- **Type checking**: Validates server payload format
-- **Array handling**: Direct assignment if payload is array
-- **Object fallback**: Extracts keys if server sends object instead of array
-- **Error handling**: Gracefully handles malformed data
-- **Debug logging**: Helps identify data format issues
+**Frontend Socket Features:**
 
-**Connection Error Handling:**
-```javascript
-newSocket.on('connect_error', (err) => {
-    console.error('Socket connect error', err);
-});
-```
-- **Error monitoring**: Logs connection failures for debugging
-- **Network issues**: Catches connection timeout, server unavailable, etc.
-- **Debugging aid**: Helps identify connectivity problems
+1. **Secure Authentication**: Sends JWT token in auth payload for server validation
+2. **Connection Management**: Prevents duplicate connections and handles errors
+3. **Online User Sync**: Receives and processes online user updates from server
+4. **Error Handling**: Handles connection failures and authentication errors
+5. **Auto-Logout**: Forces logout if socket authentication fails
 
-### 3. Authentication Integration
+### 2. Authentication Integration
 
 ```javascript
 //login func to handle socket connection on login
@@ -396,19 +365,19 @@ const login = async (state, credentials) => {
         const { data } = await axios.post(`/api/auth/${state}`, credentials);
         if (data?.success) {
             setAuthUser(data.userData);
-            connectSocket(data.userData);
-            axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-            setToken(data.token);
             localStorage.setItem("token", data.token);
+            setToken(data.token);
+            axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+            connectSocket(data.userData); // Connect socket after successful login
             toast.success(data.message);
-            return { success: true, user: data.userData, isSignup: state === 'signup' };
+            return { success: true, user: data.userData };
         } else {
             toast.error(data.message);
             return { success: false, message: data.message };
         }
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message || "An error occurred";
-        toast.error(errorMessage);
+        toast.error("Login failed");
         return { success: false, message: errorMessage };
     }
 }
@@ -426,31 +395,15 @@ const logout = async () => {
 }
 ```
 
-**Code Explanation:**
+**Authentication Integration:**
+- Socket connects automatically after successful login
+- Socket disconnects cleanly on logout
+- Handles token management for socket authentication
+- Clears all socket-related state on logout
 
-**Login Socket Integration:**
-```javascript
-if (data?.success) {
-    setAuthUser(data.userData);
-    connectSocket(data.userData);
-    // ... other login logic
-}
-```
-- **Sequence**: Authentication first, then socket connection
-- **User data**: Passes authenticated user data to socket connection
-- **Automatic connection**: Socket connects immediately after successful login
+### 3. Message Reception Handling
 
-**Logout Socket Cleanup:**
-```javascript
-if (socket && socket.disconnect) socket.disconnect();
-setSocket(null);
-```
-- **Safe disconnection**: Checks if socket exists and has disconnect method
-- **Explicit disconnect**: Manually closes the socket connection
-- **State cleanup**: Removes socket from React state
-- **Prevents leaks**: Ensures proper cleanup of socket resources
-
-### 4. Real-Time Message Reception (`frontend/context/ChatContext.jsx`)
+#### File: `frontend/context/ChatContext.jsx`
 
 ```javascript
 import { createContext, useContext, useState, useEffect } from "react";
@@ -466,242 +419,42 @@ export const ChatProvider = ({ children }) => {
     const [unseenMessages, setUnseenMessages] = useState({});
 
     const { socket, axios } = useContext(AuthContext);
-```
 
-**Code Explanation:**
-
-**Context Integration:**
-```javascript
-const { socket, axios } = useContext(AuthContext);
-```
-- **Socket access**: Gets the authenticated socket connection from AuthContext
-- **Axios instance**: Uses configured axios with authentication headers
-- **Context chain**: ChatContext depends on AuthContext for socket functionality
-
-### 5. Message Event Subscription
-
-```javascript
-//socket io event listeners -- this means subscribe to socket io events i.e. listen for events
-const subscribeToMessages = async () => {
-    if (!socket) return;
-
-    socket.on("newMessage", (newMessage) => {
+    // define the event handler
+    const handleNewMessage = (newMessage) => {
         if (selectedUser && newMessage.senderId === selectedUser._id) {
             newMessage.seen = true;
-            setMessages(prev => [...prev, data.newMessage]);
+            setMessages((prev) => [...prev, newMessage]);
             axios.put(`/api/messages/seen/${newMessage._id}`);
-        }
-        else {
-            setUnseenMessages(prev => {
-                return {
-                    ...prev,
-                    [newMessage.senderId]: prev[newMessage.senderId] ? prev[newMessage.senderId] + 1 : 1
-                }
-            })
-        }
-    });
-}
-
-//func to unsubscribe from socket io events
-const unsubscribeFromMessages = () => {
-    if (!socket) return;
-    socket.off("newMessage");
-}
-
-useEffect(() => {
-    subscribeToMessages();
-    return () => {
-        unsubscribeFromMessages();
-    }
-}, [socket, selectedUser]);
-```
-
-**Code Explanation:**
-
-**Event Subscription:**
-```javascript
-socket.on("newMessage", (newMessage) => {
-    // Message handling logic
-});
-```
-- **Event listener**: Registers handler for "newMessage" events from server
-- **Payload**: Receives complete message object from server
-- **Real-time**: Executes immediately when server emits the event
-
-**Message Visibility Logic:**
-```javascript
-if (selectedUser && newMessage.senderId === selectedUser._id) {
-    newMessage.seen = true;
-    setMessages(prev => [...prev, newMessage]);
-    axios.put(`/api/messages/seen/${newMessage._id}`);
-}
-```
-
-**Active Chat Handling:**
-- **Visibility check**: Determines if message is from currently selected user
-- **Auto-seen**: Marks message as seen if chat is active
-- **UI update**: Immediately adds message to current conversation
-- **Server sync**: Updates seen status in database
-
-**Background Message Handling:**
-```javascript
-else {
-    setUnseenMessages(prev => {
-        return {
-            ...prev,
-            [newMessage.senderId]: prev[newMessage.senderId] ? prev[newMessage.senderId] + 1 : 1
-        }
-    })
-}
-```
-
-**Notification System:**
-- **Unseen counter**: Increments count for messages from non-active users
-- **Object structure**: `{userId: unseenCount}` format
-- **Conditional increment**: Handles first message vs. additional messages
-- **UI indicators**: Powers badge counts in user list
-
-**Event Cleanup:**
-```javascript
-const unsubscribeFromMessages = () => {
-    if (!socket) return;
-    socket.off("newMessage");
-}
-```
-- **Memory management**: Removes event listeners to prevent memory leaks
-- **Specific removal**: Only removes "newMessage" listener
-- **Safe execution**: Checks socket existence before cleanup
-
-**useEffect Integration:**
-```javascript
-useEffect(() => {
-    subscribeToMessages();
-    return () => {
-        unsubscribeFromMessages();
-    }
-}, [socket, selectedUser]);
-```
-- **Dependency array**: Re-subscribes when socket or selectedUser changes
-- **Cleanup function**: Automatically unsubscribes when component unmounts
-- **Re-subscription**: Handles socket reconnection scenarios
-
-### 6. Message Sending Integration
-
-```javascript
-//func to send message to selected user
-const sendMessage = async (msgData, isFormData = false) => {
-    try {
-        const config = isFormData ? {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        } : {};
-        
-        const { data } = await axios.post(`/api/messages/send/${selectedUser._id}`, msgData, config);
-        if (data?.success) {
-            setMessages(prev => [...prev, data.newMessage]);
         } else {
-            toast.error(data.message);
+            setUnseenMessages((prev) => ({
+                ...prev,
+                [newMessage.senderId]: prev[newMessage.senderId]
+                    ? prev[newMessage.senderId] + 1
+                    : 1,
+            }));
         }
+    };
 
-    } catch (error) {
-        toast.error(error.message);
-    }
-}
+    useEffect(() => {
+        if (!socket) return;
+        // subscribe
+        socket.on("newMessage", handleNewMessage);
+
+        // unsubscribe when component unmounts OR deps change
+        return () => {
+            socket.off("newMessage", handleNewMessage);
+        };
+
+    }, [socket, selectedUser]);
 ```
 
-**Code Explanation:**
+**Message Reception Logic:**
 
-**HTTP + Socket Hybrid:**
-- **HTTP request**: Sends message via REST API for persistence
-- **Socket notification**: Server uses socket to notify receiver in real-time
-- **Optimistic update**: Sender's UI updates immediately with API response
-- **Real-time delivery**: Receiver gets instant notification via socket
-
-**Content Type Handling:**
-```javascript
-const config = isFormData ? {
-    headers: {
-        'Content-Type': 'multipart/form-data',
-    },
-} : {};
-```
-- **Conditional headers**: Different content types for text vs. image messages
-- **FormData support**: Handles file uploads with multipart encoding
-- **JSON default**: Regular messages use default JSON content type
-
----
-
-## Socket Event Flow
-
-### Complete Message Sending Flow
-
-1. **User Types Message** → UI Event
-2. **sendMessage() Called** → HTTP POST to `/api/messages/send/:userId`
-3. **Server Saves Message** → MongoDB persistence
-4. **Server Emits Socket Event** → `io.to(receiverSocketId).emit("newMessage", newMessage)`
-5. **Receiver's Socket Listener** → Handles "newMessage" event
-6. **UI Updates** → Message appears in receiver's chat
-
-### Connection Lifecycle
-
-1. **User Logs In** → `login()` function
-2. **Socket Connects** → `connectSocket(userData)` called
-3. **Server Maps User** → `userSocketMap.set(userId, socket.id)`
-4. **Online Users Broadcast** → All clients receive updated online list
-5. **Message Subscription** → `subscribeToMessages()` starts listening
-6. **User Logs Out** → Socket disconnects, mappings cleaned up
-
-### Online Status Synchronization
-
-1. **User Connects** → Server adds to `userSocketMap`
-2. **Broadcast Update** → `io.emit("getOnlineUsers", Array.from(userSocketMap.keys()))`
-3. **All Clients Receive** → Update their `onlineUsers` state
-4. **UI Indicators** → Green dots appear next to online users
-5. **User Disconnects** → Server removes from map, broadcasts update
-
----
-
-## Real-Time Message Broadcasting
-
-### Server-Side Broadcasting Strategy
-
-```javascript
-//emit new message to receiver if online
-const receiverSocketId = userSocketMap.get(receiverId);
-if (receiverSocketId) {
-    io.to(receiverSocketId).emit("newMessage", newMessage);
-}
-```
-
-**Broadcasting Logic:**
-- **Targeted delivery**: Only sends to intended recipient
-- **Online check**: Only attempts delivery if user is connected
-- **Efficient routing**: Direct socket-to-socket communication
-- **Offline handling**: Messages stored in database for later retrieval
-
-### Client-Side Message Reception
-
-```javascript
-socket.on("newMessage", (newMessage) => {
-    if (selectedUser && newMessage.senderId === selectedUser._id) {
-        newMessage.seen = true;
-        setMessages(prev => [...prev, newMessage]);
-        axios.put(`/api/messages/seen/${newMessage._id}`);
-    } else {
-        setUnseenMessages(prev => ({
-            ...prev,
-            [newMessage.senderId]: prev[newMessage.senderId] ? prev[newMessage.senderId] + 1 : 1
-        }));
-    }
-});
-```
-
-**Reception Logic:**
-- **Context awareness**: Different handling based on active chat
-- **Automatic seen**: Messages from active chat are marked as seen
-- **Notification system**: Background messages increment unseen counters
-- **State synchronization**: UI updates reflect real-time changes
+1. **Active Chat Handling**: Messages from currently selected user are marked as seen automatically
+2. **Background Messages**: Messages from other users increment unseen counters
+3. **Real-Time Updates**: UI updates immediately when messages arrive
+4. **Event Cleanup**: Properly unsubscribes from events to prevent memory leaks
 
 ---
 
@@ -710,24 +463,29 @@ socket.on("newMessage", (newMessage) => {
 ### Server-Side User Tracking
 
 ```javascript
+//store online users
 export const userSocketMap = new Map(); //key:userId value:socketId
 
-io.on("connection", (socket) => {
-    const userId = socket.handshake.query.userId;
-    if (userId) {
-        userSocketMap.set(userId, socket.id);
-    }
-    io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
-});
+// On connection
+if (userId) {
+    userSocketMap.set(userId, socket.id);
+}
+io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+
+// On disconnection  
+if (userId) {
+    userSocketMap.delete(userId);
+}
+io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
 ```
 
-**Tracking Mechanism:**
-- **Map data structure**: Efficient O(1) lookups for user-socket relationships
-- **Query parameter**: User ID passed during handshake for identification
-- **Immediate broadcast**: All clients notified when user comes online
-- **Array conversion**: Map keys converted to array for client consumption
+**Online User Features:**
+- **Real-Time Tracking**: Instant updates when users connect/disconnect
+- **Efficient Storage**: Map data structure for O(1) lookups
+- **Broadcast Updates**: All clients receive online status changes
+- **Memory Management**: Automatic cleanup on disconnection
 
-### Client-Side Online Status
+### Frontend Online Status
 
 ```javascript
 newSocket.on("getOnlineUsers", (userIds) => {
@@ -745,65 +503,69 @@ newSocket.on("getOnlineUsers", (userIds) => {
 });
 ```
 
-**Status Management:**
-- **Type validation**: Ensures data format consistency
-- **Fallback handling**: Graceful degradation for malformed data
-- **State updates**: React state synchronizes with server
-- **UI integration**: Online indicators appear throughout the app
+**Frontend Processing:**
+- **Type Validation**: Ensures data format consistency
+- **Fallback Handling**: Graceful degradation for malformed data
+- **State Synchronization**: Keeps UI in sync with server
+- **Error Recovery**: Handles data parsing errors
 
 ---
 
-## Socket Connection Lifecycle
+## Socket Event Flow
 
-### Connection Establishment
+### Complete Message Flow
 
-1. **Authentication Success** → User credentials validated
-2. **Socket Initialization** → `connectSocket(userData)` called
-3. **Handshake** → Client sends userId in query parameters
-4. **Server Recognition** → Server maps userId to socketId
-5. **Event Subscription** → Client starts listening for events
-6. **Online Broadcast** → All users notified of new online user
+1. **User Sends Message** → HTTP POST to `/api/messages/send/:userId`
+2. **Server Processes** → Validates, saves to database
+3. **Socket Emission** → Server emits to receiver's socket if online
+4. **Frontend Reception** → Client receives "newMessage" event
+5. **UI Update** → Message appears in chat interface
+6. **Seen Status** → Auto-marked as seen if chat is active
 
-### Connection Maintenance
+### Connection Lifecycle
 
-- **Heartbeat**: Socket.IO automatically maintains connection health
-- **Reconnection**: Automatic reconnection on network interruption
-- **Error Handling**: Connection errors logged and handled gracefully
-- **Resource Management**: Proper cleanup prevents memory leaks
+1. **User Login** → JWT token generated and stored
+2. **Socket Connection** → Token sent to server for authentication
+3. **Authentication** → Server validates token and user
+4. **User Mapping** → Server maps userId to socketId
+5. **Online Broadcast** → All clients notified of new online user
+6. **Message Subscription** → Client starts listening for events
+7. **User Logout** → Socket disconnects, cleanup performed
 
-### Disconnection Process
+### Event Types
 
-1. **User Logout** → `logout()` function called
-2. **Manual Disconnect** → `socket.disconnect()` executed
-3. **Server Cleanup** → User removed from `userSocketMap`
-4. **Offline Broadcast** → All users notified of user going offline
-5. **State Cleanup** → Client resets socket-related state
-
----
-
-## Performance Considerations
-
-### Efficient User Mapping
-- **Map data structure**: O(1) lookup performance for user-socket relationships
-- **Memory efficiency**: Only stores active connections
-- **Automatic cleanup**: Disconnected users removed immediately
-
-### Targeted Message Delivery
-- **Point-to-point**: Messages sent only to intended recipients
-- **No broadcasting**: Avoids unnecessary network traffic
-- **Online checks**: No attempted delivery to offline users
-
-### Event Subscription Management
-- **Selective listening**: Only subscribes to relevant events
-- **Cleanup on unmount**: Prevents memory leaks in React components
-- **Dependency management**: Re-subscription handles component updates
-
-### Scalability Considerations
-- **Single server**: Current implementation suitable for moderate scale
-- **Room-based**: Could be extended with Socket.IO rooms for chat groups
-- **Redis adapter**: Could add Redis for multi-server scaling
-- **Load balancing**: Sticky sessions required for current architecture
+| Event | Direction | Purpose |
+|-------|-----------|---------|
+| `connection` | Client → Server | Establish socket connection |
+| `getOnlineUsers` | Server → Client | Broadcast online user list |
+| `newMessage` | Server → Client | Deliver real-time messages |
+| `disconnect` | Client → Server | Handle connection termination |
 
 ---
 
-This comprehensive Socket.IO implementation provides real-time messaging capabilities with efficient user management, targeted message delivery, and robust error handling. The system maintains state consistency between database persistence and real-time updates, ensuring reliable message delivery in the ChatSpace application.
+## Performance & Security Considerations
+
+### Performance Optimizations
+
+1. **Targeted Messaging**: Point-to-point delivery instead of broadcasting
+2. **Efficient Mapping**: Map data structure for O(1) user lookups
+3. **Event Cleanup**: Proper event listener removal prevents memory leaks
+4. **Database-First**: Ensures message persistence before real-time delivery
+
+### Security Measures
+
+1. **JWT Authentication**: All socket connections require valid tokens
+2. **Database Validation**: User existence verified on each connection
+3. **Error Handling**: Detailed logging without exposing sensitive data
+4. **Token Refresh**: Automatic logout on authentication failures
+
+### Scalability Notes
+
+- Current implementation supports single-server deployment
+- For multi-server scaling, consider Redis adapter for Socket.IO
+- Sticky sessions required for load balancing
+- Room-based architecture can be added for group chats
+
+---
+
+This Socket.IO implementation provides a robust, secure, and efficient real-time messaging system for your ChatSpace application, handling authentication, message delivery, and online presence with proper error handling and cleanup mechanisms.

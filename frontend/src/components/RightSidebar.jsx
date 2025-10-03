@@ -37,7 +37,7 @@ const RightSidebar = () => {
     <div className={`bg-black/30 backdrop-blur-sm h-full overflow-y-auto text-white ${selectedUser ? "max-md:hidden" : "hidden"}`}>
       {/* -------------Profile Section------------------------------------ */}
       <div className='flex flex-col items-center p-4 text-center border-b border-gray-700/30'>
-        <img src={selectedUser?.profilePic || assets.avatar_icon} alt=""
+        <img src={selectedUser?.profilePic || assets.avatar_icon} alt="userProfile"
           className='w-16 h-16 rounded-full object-cover border-2 border-gray-600' />
         <h2 className='text-white text-lg font-medium mt-3 flex items-center justify-center gap-2'>
           {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}

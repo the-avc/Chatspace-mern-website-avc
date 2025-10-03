@@ -15,6 +15,9 @@ A full-featured real-time application built with the MERN stack, featuring AI in
 ### Advanced Features
 -  **AI Assistant Integration** - Secure chat with AI using Groq SDK
 - **AI Usage handling by Admin** - Admin can set the usage of AI for all users
+- **Admin Upload Controls** - Dynamic upload enable/disable with database validation
+- **Lazy Loading Components** - React.lazy() for TextType and Silk components
+- **Admin Panel Features** - Special admin UI controls and toggles
 -  **Rich UI Components** - Added background and text animations using react-bits
 -  **Optimized Cloud Storage** - DiskStorage + Cloudinary with automatic cleanup
 -  **Production-Ready Security** - Comprehensive input validation, file type checking, and memory management
@@ -38,6 +41,8 @@ A full-featured real-time application built with the MERN stack, featuring AI in
 - ✅ **DiskStorage Migration** - Switched from memoryStorage to diskStorage for better scalability.Multiple simultaneous uploads could exhaust server memory. No cleanup = disk space leak
 - ✅ **Automatic File Cleanup** - Temporary files automatically removed after Cloudinary upload
 - ✅ **Admin AI Control** - Admin can disable AI globally from settings. Reduces API costs when not needed
+- ✅ **Dynamic Upload Controls** - Admin can toggle uploads via `checkUploadEnabled` middleware
+- ✅ **Lazy Component Loading** - React.lazy() implementation for better performance
 
 ## ⚠️ Remaining Areas for Enhancement
 
@@ -50,6 +55,23 @@ A full-featured real-time application built with the MERN stack, featuring AI in
 - **Refresh Token Flow** - Currently uses access tokens only; consider refresh token implementation
 - **Presence Scaling** - In-memory presence won't scale across multiple instances (needs Redis adapter)
 - **Error Response Standardization** - Some endpoints return different error formats
+
+## 🎯 Key Features Breakdown
+
+### Upload System
+- **Dynamic Controls** - `checkUploadEnabled` middleware validates admin settings
+- **File Restrictions** - 5MB limit, image-only validation, AI upload blocking
+- **Temporary Storage** - DiskStorage with automatic cleanup after Cloudinary upload
+
+### Admin Features
+- **Upload Toggle** - Database-driven upload enable/disable
+- **AI Control** - Real-time AI assistant enable/disable
+- **Special UI** - Admin badges and exclusive controls
+- **Environment-Based** - Admin ID from environment variables
+
+### Performance Optimizations
+- **Lazy Loading** - React.lazy() for TextType and Silk components
+- **Memory Management** - Proper event cleanup in useEffect hooks
 
 ## �📁 Project Structure
 
@@ -127,6 +149,10 @@ chat-app/
 - `PUT /api/ai/limiter` - Toggle AI globally (admin only)
 - `GET /api/ai/limiter` - Get the AI availability status
 
+### Admin Controls
+- **Upload Toggle** - Admin can enable/disable uploads via database flag
+- **AI Toggle** - Admin can control AI availability in real-time
+
 **Note:** Protected endpoints require `Authorization: Bearer <token>` header.
 
 ## � Installation & Setup
@@ -161,7 +187,7 @@ chat-app/
    AI_ASSISTANT_ID=ai-assistant-unique-id
    AI_ENABLED=true
 
-   #Admin Configuration
+   # Admin Configuration
    ADMIN_ID=admin-unique-id
    ```
 3. **Start the backend server**
@@ -179,9 +205,14 @@ chat-app/
    ```
 2. **Create environment file**
    ```powershell
+   # Backend Connection
    VITE_BACKEND_URL='http://localhost:5000'
+   
+   # User IDs
    VITE_ADMIN_ID=admin-unique-id
    VITE_AI_ASSISTANT_ID=ai-assistant-unique-id
+   
+   # Feature Flags
    VITE_AI_ENABLED=true
    ```
 3. **Start the development server**
@@ -211,8 +242,6 @@ This project is licensed under the ISC License.
 ---
 
 **Built with ❤️ by [the-avc](https://github.com/the-avc)**
-
-*Recent major updates: Socket authentication security, DiskStorage implementation, enhanced file handling, and comprehensive input validation.*
 
 ## 📚 Additional Documentation
 For detailed implementation notes, see:

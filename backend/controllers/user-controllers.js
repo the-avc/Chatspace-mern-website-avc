@@ -63,6 +63,14 @@ export const updateProfile = async (req, res) => {
             // No file uploaded, update only text fields
             updatedUser = await User.findByIdAndUpdate(userId, { fullName, bio }, { new: true });
         } else {
+            if (!req.uploadsEnabled && req.file?.path) {
+                try {
+                    await fs.unlinkSync(req.file.path);
+                } catch (e) {
+                    // Ignore errors during file deletion
+                }
+                return res.status(403).json({ success: false, message: "Image uploads are disabled by AVC" });
+            }
             // File uploaded via multer (diskStorage), upload to cloudinary
             const uploadResponse = await uploadOnCloudinary(req.file.path);
             if (!uploadResponse) {

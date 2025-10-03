@@ -2,6 +2,7 @@ import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { Message } from "../models/message-model.js";
 import { User } from "../models/user-model.js";
 import { userSocketMap, io } from "../server.js";
+import fs from "fs";
 
 //get all users list
 export const getUsersForSidebar = async (req, res) => {
@@ -87,6 +88,14 @@ export const sendMessage = async (req, res) => {
 
         // Handle image upload via multer (diskStorage)
         if (req.file) {
+            if (!req.uploadsEnabled && req.file?.path) {
+                try {
+                    await fs.unlinkSync(req.file.path);
+                } catch (e) {
+                    // Ignore errors during file deletion
+                }
+                return res.status(403).json({ success: false, message: "Image uploads are disabled by AVC" });
+            }
             const uploadResponse = await uploadOnCloudinary(req.file.path);
             if (uploadResponse) {
                 imageUrl = uploadResponse.secure_url;
