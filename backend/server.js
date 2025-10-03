@@ -33,7 +33,7 @@ io.use(verifySocket);
 
 io.on("connection", (socket) => {
     // Use verified userId from authentication middleware
-    const userId = socket.userId; 
+    const userId = socket.userId;
     console.log(`User connected: ${socket.user.fullName} (${userId})`);
 
     if (userId) {
@@ -66,6 +66,10 @@ app.use("/api/ai", aiRouter);
 connectDB();
 loadAiEnabled(); // Load AI enabled status on server start
 
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+    server.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+export default server; //for vercel
