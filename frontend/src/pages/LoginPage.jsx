@@ -51,7 +51,7 @@ const LoginPage = () => {
               {/* <h1 className='text-4xl font-bold text-white'>Chatspace</h1> */}
             </div>
             <div className='text-white text-xl mb-8 font-medium'>
-              Connect with
+              Connect with {' '}
               <Suspense fallback={<span className='inline-block ml-2'>...</span>}>
                 <TextType
                   text={["friends", "families", "colleagues", "Alison A.I.", "many more!"]}
