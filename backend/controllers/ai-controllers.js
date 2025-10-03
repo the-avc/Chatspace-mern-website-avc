@@ -1,14 +1,33 @@
 import Groq from "groq-sdk";
 import { Message } from "../models/message-model.js";
 import { User } from "../models/user-model.js";
-import { userSocketMap, io } from "../server.js";
+import { io } from "../server.js";
+
+// Initial load from env variable (env vars are strings)
+let aiEnabled = String(process.env.AI_ENABLED || '').toLowerCase() === 'true';
+export async function loadAiEnabled() {
+	try {
+		const aiAssistant = await User.findById(process.env.AI_ASSISTANT_ID).select('enabled').lean();
+		if (aiAssistant && typeof aiAssistant.enabled === 'boolean') {
+			aiEnabled = aiAssistant.enabled;
+		}
+	} catch (error) {
+		console.error("Error loading AI enabled status:", error);
+	}
+}
 
 // Simple AI chat completion controller
 export const chatWithAI = async (req, res) => {
 	try {
 		const { messages: incomingMessages, model, prompt } = req.body || {}; //message and prompt are different it means that message is an array of objects and prompt is a string
 		const userId = req.user._id; // Current user ID
-		
+
+		// Check if AI service is enabled
+		if (!aiEnabled) {
+			console.log("AI service is disabled by AVC");
+			return res.status(503).json({ success: false, message: "AI service is currently disabled" });
+		}
+
 		if (!process.env.GROQ_API_KEY) {
 			return res.status(500).json({ success: false, message: "GROQ_API_KEY not configured" });
 		}
@@ -22,7 +41,7 @@ export const chatWithAI = async (req, res) => {
 		}
 
 		if (!Array.isArray(messages) || messages.length === 0) {
-			return res.status(400).json({ success: false, message: "messages array is required (or provide 'prompt')" });
+			return res.status(400).json({ success: false, message: "messages array is required" });
 		}
 
 		// Find or create AI assistant user
@@ -44,7 +63,7 @@ export const chatWithAI = async (req, res) => {
 			senderId: userId,
 			receiverId: process.env.AI_ASSISTANT_ID,
 			text: prompt,
-			seen: true // AI messages are immediately "seen"
+			seen: true // AI messages immediately "seen"
 		});
 		await userMessage.save();
 
@@ -69,7 +88,6 @@ export const chatWithAI = async (req, res) => {
 		await aiMessage.save();
 
 		// Note: Not emitting socket events for AI messages since frontend handles them directly
-		// This prevents duplicate messages from appearing
 
 		return res.status(200).json({
 			success: true,
@@ -84,4 +102,41 @@ export const chatWithAI = async (req, res) => {
 	}
 };
 
+export const toggleAiStatus = async (req, res) => {
+	try {
+		const { enabled } = req.body || {};
 
+		// Read current status if no enabled value provided
+		if (enabled === undefined) {
+			return res.json({ success: true, enabled: aiEnabled });
+		}
+
+		if (String(req.user._id) !== String(process.env.ADMIN_ID)) {
+			return res.status(403).json({ success: false, message: 'Admin access required' });
+		}
+
+		if (typeof enabled !== 'boolean') {
+			return res.status(400).json({ success: false, message: 'enabled must be boolean' });
+		}
+
+		aiEnabled = enabled;
+		await User.findByIdAndUpdate(process.env.AI_ASSISTANT_ID, { enabled });
+		try {
+			io.emit("aiStatusChanged", aiEnabled);
+		} catch (error) {
+			console.error("Socket aiStatus error:", error);
+		}
+		return res.json({ success: true, enabled });
+	} catch (error) {
+		console.error("AI toggle error:", error);
+		return res.status(500).json({ success: false, message: 'Server error' });
+	}
+};
+
+export const getAiStatus = (req, res) => {
+	try {
+		return res.json({ success: true, enabled: aiEnabled });
+	} catch (err) {
+		return res.status(500).json({ success: false, message: 'ai status error' });
+	}
+};

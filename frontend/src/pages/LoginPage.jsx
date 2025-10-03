@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext';
 import { assets } from '../assets/assets';
@@ -6,9 +6,9 @@ import TextType from '../../react-bits/TextType/TextType';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = React.useState(true);
+  const [isLogin, setIsLogin] = useState(true);
 
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     email: '',
     password: '',
     fullName: '',
@@ -32,7 +32,6 @@ const LoginPage = () => {
     } else {
       console.log('Login/Signup failed:', result?.message);
     }
-    // console.log(isLogin ? 'Logging in with' : 'Signing up with', formData);
   };
 
   return (
@@ -123,6 +122,7 @@ const LoginPage = () => {
                         placeholder="Enter your full name"
                         className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors'
                         required={!isLogin}
+                        minLength={3}
                       />
                     </div>
                   </div>
@@ -160,6 +160,7 @@ const LoginPage = () => {
                       placeholder="Enter your password"
                       className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors'
                       required
+                      minLength={6}
                     />
                   </div>
                 </div>

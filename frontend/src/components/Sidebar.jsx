@@ -1,16 +1,18 @@
-import React, { useRef, useEffect, useContext } from 'react'
+import React, { useRef, useEffect, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { assets, userDummyData } from '../assets/assets';
+import { assets } from '../assets/assets';
 import { AuthContext } from '../../context/AuthContext';
 import { ChatContext } from '../../context/ChatContext';
+import { AiContext } from '../../context/AiContext';
 
 const Sidebar = () => {
     const { selectedUser, users, getUsers, setSelectedUser, unseenMessages, setUnseenMessages } = useContext(ChatContext);
     const { authUser } = useContext(AuthContext);
-    const [hide, setHide] = React.useState(false);
+    const [hide, setHide] = useState(false);
     const { logout, onlineUsers } = useContext(AuthContext);
+    const { aiEnabled } = useContext(AiContext);
 
-    const [searchTerm, setSearchTerm] = React.useState("");
+    const [searchTerm, setSearchTerm] = useState("");
 
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
@@ -30,15 +32,13 @@ const Sidebar = () => {
         getUsers();
     }, [onlineUsers]);
 
-
+    const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            setHide(false);
+        }
+    };
     // Close dropdown when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setHide(false);
-            }
-        };
-
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -84,30 +84,25 @@ const Sidebar = () => {
 
             {/* Users List */}
             <div className='flex flex-col overflow-y-auto h-[calc(100%-120px)]'>
-                {/*--------------------- AI Assistant (Always at top) ------------------------------- */}
+                {/*--------------------- AI Assistant (at top) ------------------------------- */}
                 {aiAssistant && (
                     <div
                         onClick={() => {
                             setSelectedUser(aiAssistant);
-                            // setUnseenMessages(prev => ({ ...prev, [aiAssistant._id]: 0 }));
                         }}
                         className={`relative flex items-center gap-2 p-2 mx-2 my-0.5 rounded-lg cursor-pointer hover:bg-gray-700/30 transition-all duration-200 ${selectedUser?._id === aiAssistant._id ? "bg-blue-500/20 border-l-4 border-blue-500" : ""}`}
                     >
                         <div className='relative'>
                             <img src={aiAssistant.profilePic} alt="AI" className='w-10 h-10 rounded-full object-cover border border-gray-600' />
-                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border border-gray-800 bg-green-500`}></div>
+                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border border-gray-800 ${aiEnabled ? "bg-green-500" : "bg-gray-500"}`}></div>
                         </div>
 
                         <div className='flex-1 min-w-0'>
                             <div className='flex items-center justify-between'>
-                                <p className='font-medium text-sm truncate'> {aiAssistant.fullName}</p>
-                                {/* {unseenMessages[aiAssistant._id] > 0 && (
-                                    <span className='bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none'>
-                                        {unseenMessages[aiAssistant._id]}
-                                    </span>
-                                )} */}
+                                <p className='font-medium text-sm truncate'> {aiAssistant.fullName} </p>
+                                <i className="fi fi-ss-thumbtack text-sm"></i>
                             </div>
-                            <p className='text-xs text-green-400'>Always Online</p>
+                            <p className={`text-xs ${aiEnabled ? "text-green-400" : "text-gray-400"}`}>{aiEnabled ? "Always Online" : "Curently Unavailable"}</p>
                         </div>
                     </div>
                 )}
@@ -130,7 +125,8 @@ const Sidebar = () => {
                         </div>
 
                         <div className='flex-1 min-w-0'>
-                            <div className='flex items-center justify-between'>
+                            <div className='flex items-center justify-between'
+                                title={String(user._id) === String(import.meta.env.VITE_ADMIN_ID) && "Admin"}>
                                 <p className='font-medium text-sm truncate'>{user.fullName}</p>
                                 {unseenMessages[user._id] > 0 && (
                                     <span className='bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none'>

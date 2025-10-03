@@ -1,4 +1,4 @@
-import cloudinary from "../lib/cloudinary.js";
+import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { Message } from "../models/message-model.js";
 import { User } from "../models/user-model.js";
 import { userSocketMap, io } from "../server.js";
@@ -57,10 +57,10 @@ export const getAllMessages = async (req, res) => {
         }, {
             $set: { seen: true }
         })
-        res.status(200).json({success:true, messages});
+        res.status(200).json({ success: true, messages });
     } catch (error) {
         console.log("Get messages error:", error);
-        res.status(500).json({success:false, message: "Internal server error" });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
 
@@ -69,10 +69,10 @@ export const makeMsgSeen = async (req, res) => {
     try {
         const msgId = req.params.msgId;
         await Message.findByIdAndUpdate(msgId, { seen: true });
-        res.status(200).json({ success:true,message: "Message marked as seen" });
+        res.status(200).json({ success: true, message: "Message marked as seen" });
     } catch (error) {
         console.log("Mark message seen error:", error);
-        res.status(500).json({success:false, message: "Internal server error" });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
 
@@ -84,43 +84,39 @@ export const sendMessage = async (req, res) => {
         const receiverId = req.params.userId;
 
         let imageUrl = "";
-        
-        // Handle image upload via multer
+
+        // Handle image upload via multer (diskStorage)
         if (req.file) {
-            const uploadResponse = await new Promise((resolve, reject) => {
-                cloudinary.uploader.upload_stream(
-                    { resource_type: 'image' },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result);
-                    }
-                ).end(req.file.buffer);
-            });
-            imageUrl = uploadResponse.secure_url;
+            const uploadResponse = await uploadOnCloudinary(req.file.path);
+            if (uploadResponse) {
+                imageUrl = uploadResponse.secure_url;
+            } else {
+                return res.status(500).json({ success: false, message: "Image upload failed" });
+            }
         }
-        
+
         // Validate that either text or image is provided
         if (!text && !imageUrl) {
             return res.status(400).json({ success: false, message: "Either text or image is required" });
         }
-        
+
         const newMessage = new Message({
             senderId,
             receiverId,
             text: text || "",
             image: imageUrl
         });
-        
+
         await newMessage.save();
-        
+
         //emit new message to receiver if online
         const receiverSocketId = userSocketMap.get(receiverId);
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage", newMessage);
         }
-        res.status(201).json({success:true,newMessage});
+        res.status(201).json({ success: true, newMessage });
     } catch (error) {
         console.log("Send message error:", error);
-        res.status(500).json({ success:false,message: "Internal server error" });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 }

@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
 import toast from "react-hot-toast";
-import { askAI } from "../src/lib/ai";
 
 export const ChatContext = createContext(null);
 
@@ -42,59 +41,50 @@ export const ChatProvider = ({ children }) => {
     }
 
     //func to send message to selected user
-    const sendMessage = async (msgData, isFormData = false) => {
+    const sendMessage = async (msgData) => {
         try {
-            const config = isFormData ? {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            } : {};
-            
-            const { data } = await axios.post(`/api/messages/send/${selectedUser._id}`, msgData, config);
+            // axios automatically detects FormData and sets proper headers
+            // No need for manual config - axios handles both JSON and FormData
+            const { data } = await axios.post(`/api/messages/send/${selectedUser._id}`, msgData);
             if (data?.success) {
                 setMessages(prev => [...prev, data.newMessage]);
             } else {
-                toast.error(data.message);
+                toast.error(data.message || "Failed to send message");
             }
 
         } catch (error) {
-            toast.error(error.message);
+            console.error("Send message error:", error);
+            const errorMessage = error.response?.data?.message || error.message || "Failed to send message";
+            toast.error(errorMessage);
         }
     }
 
-    //socket io event listeners -- this means subscribe to socket io events i.e. listen for events
-    const subscribeToMessages = async () => {
-        if (!socket) return;
-
-        socket.on("newMessage", (newMessage) => {
-            if (selectedUser && newMessage.senderId === selectedUser._id) {
-                newMessage.seen = true;
-                setMessages(prev => [...prev, newMessage]);
-                axios.put(`/api/messages/seen/${newMessage._id}`);
-            }
-            else {
-                setUnseenMessages(prev => {
-                    return {
-                        ...prev,
-                        [newMessage.senderId]: prev[newMessage.senderId] ? prev[newMessage.senderId] + 1 : 1
-                    }
-                })
-            }
-
-        });
-    }
-
-    //func to unsubscribe from socket io events
-    const unsubscribeFromMessages = () => {
-        if (!socket) return;
-        socket.off("newMessage"); //this means remove the listener for newMessage event
-    }
+    // define the event handler
+    const handleNewMessage = (newMessage) => {
+        if (selectedUser && newMessage.senderId === selectedUser._id) {
+            newMessage.seen = true;
+            setMessages((prev) => [...prev, newMessage]);
+            axios.put(`/api/messages/seen/${newMessage._id}`);
+        } else {
+            setUnseenMessages((prev) => ({
+                ...prev,
+                [newMessage.senderId]: prev[newMessage.senderId]
+                    ? prev[newMessage.senderId] + 1
+                    : 1,
+            }));
+        }
+    };
 
     useEffect(() => {
-        subscribeToMessages();
+        if (!socket) return;
+        // subscribe
+        socket.on("newMessage", handleNewMessage);
+
+        // unsubscribe when component unmounts OR deps change
         return () => {
-            unsubscribeFromMessages();
-        }
+            socket.off("newMessage", handleNewMessage);
+        };
+
     }, [socket, selectedUser]);
 
     const value = {

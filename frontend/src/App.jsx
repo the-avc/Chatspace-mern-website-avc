@@ -29,16 +29,16 @@ const App = () => {
           speed={2.2}
           scale={1}
           color={currentColor}
-          noiseIntensity={1.5}
-          rotation={0.0}
+          noiseIntensity={1.0}
+          rotation={1.0}
         />
       </div>
-      
+
       {/* Global Version Indicator */}
       <div className='fixed top-2 left-2 z-50 text-white/20 text-sm font-mono pointer-events-none'>
-       the-AVC
+        the-AVC
       </div>
-      
+
       <Toaster />
       <Routes>
         <Route path='/' element={authUser ? <HomePage /> : <Navigate to="/login" />} />
@@ -47,9 +47,9 @@ const App = () => {
         <Route path='/*' element={authUser ? <Navigate to="/" /> : <Navigate to="/login" />} />
       </Routes>
 
-      <div className='absolute bottom-2 font-mono right-4 text-white/20 text-xs pointer-events-none'>
-              © 2025 Chatspace v2.0. All rights reserved.
-            </div>
+      <div className='absolute bottom-2 font-mono right-4 text-white/25 text-xs pointer-events-none'>
+        © 2025 Chatspace v2.0. All rights reserved.
+      </div>
     </>
   )
 }

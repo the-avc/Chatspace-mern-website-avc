@@ -5,13 +5,16 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from '../context/AuthContext.jsx'
 import { ChatProvider } from '../context/ChatContext.jsx'
+import { AiProvider } from '../context/AiContext.jsx'
 
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <AuthProvider>
       <ChatProvider>
-        <App />
+        <AiProvider>
+          <App />
+        </AiProvider>
       </ChatProvider>
     </AuthProvider>
   </BrowserRouter>

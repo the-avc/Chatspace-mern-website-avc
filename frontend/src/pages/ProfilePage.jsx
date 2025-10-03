@@ -1,11 +1,11 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import avatar_icon from '../assets/avatar.png'
 import { AuthContext } from '../../context/AuthContext';
 
 const ProfilePage = () => {
   const { authUser, updateProfile } = useContext(AuthContext);
-  const [selectedImage, setSelectedImage] = React.useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   const navigate = useNavigate();
   const [formData, setFormData] = React.useState({
     name: authUser?.fullName || '',
@@ -21,18 +21,32 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Create FormData object
-    const formDataToSend = new FormData();
-    formDataToSend.append('fullName', formData.name);
-    formDataToSend.append('bio', formData.bio);
-    
-    if (selectedImage) {
-      formDataToSend.append('profilePic', selectedImage);
+
+    if (!formData.name.trim()) {
+      toast.error('Name is required');
+      return;
     }
-    
-    await updateProfile(formDataToSend);
-    navigate('/');
+    if (formData.name.trim().length < 3) {
+      toast.error('Name must be at least 3 characters');
+      return;
+    }
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('fullName', formData.name.trim());
+      formDataToSend.append('bio', formData.bio.trim());
+
+      if (selectedImage) {
+        formDataToSend.append('profilePic', selectedImage);
+      }
+
+      await updateProfile(formDataToSend);
+      toast.success('Profile updated successfully!');
+      navigate('/'); //redirect
+    } catch (error) {
+      console.error('Profile update error:', error);
+      toast.error('Failed to update profile. Please try again.');
+    }
   }
 
   return (
@@ -42,12 +56,17 @@ const ProfilePage = () => {
         <form onSubmit={handleSubmit} className='flex flex-col gap-5 p-10 flex-1'>
           <h3 className='text-lg'>Profile details</h3>
           <label htmlFor="avatar" className='flex items-center gap-3 cursor-pointer'>
-            <input type="file" id="avatar" accept='.png, .jpeg, .jpg'
-              hidden onChange={(e) => {
+            <input
+              type="file"
+              id="avatar"
+              accept=".image/jpeg,.image/png,.image/jpg,.image/webp"
+              hidden
+              onChange={(e) => {
                 setSelectedImage(e.target.files[0]);
               }} />
             <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-gray-600 flex-shrink-0 bg-gray-700 flex items-center justify-center'>
-              <img src={selectedImage ? URL.createObjectURL(selectedImage) : authUser?.profilePic || avatar_icon} alt=""
+              <img src={selectedImage ? URL.createObjectURL(selectedImage) : authUser?.profilePic || avatar_icon}
+                alt="profile"
                 className='w-full h-full object-cover'
                 onError={(e) => e.target.src = avatar_icon} />
             </div>

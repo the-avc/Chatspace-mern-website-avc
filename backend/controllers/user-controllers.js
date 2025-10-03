@@ -1,4 +1,4 @@
-import cloudinary from "../lib/cloudinary.js";
+import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { generateToken } from "../lib/util.js";
 import { User } from "../models/user-model.js";
 import bcrypt from "bcryptjs";
@@ -46,7 +46,6 @@ export const login = async (req, res) => {
         const { password: _, ...userWithoutPassword } = user.toObject();
         const token = generateToken(user._id);
         res.status(200).json({ success: true, message: "User logged in successfully", userData: userWithoutPassword, token });
-
     } catch (error) {
         console.log("Login error:", error);
         res.status(500).json({ message: "Internal server error" });
@@ -64,33 +63,18 @@ export const updateProfile = async (req, res) => {
             // No file uploaded, update only text fields
             updatedUser = await User.findByIdAndUpdate(userId, { fullName, bio }, { new: true });
         } else {
-            // File uploaded via multer, upload to cloudinary
-            const uploadOnCloudinary = await cloudinary.uploader.upload_stream(
-                { resource_type: 'image' },
-                async (error, result) => {
-                    if (error) {
-                        console.log("Image upload error:", error);
-                        return res.status(500).json({ message: "Image upload failed" });
-                    }
+            // File uploaded via multer (diskStorage), upload to cloudinary
+            const uploadResponse = await uploadOnCloudinary(req.file.path);
+            if (!uploadResponse) {
+                return res.status(500).json({ success: false, message: "Image upload failed" });
+            }
 
-                    updatedUser = await User.findByIdAndUpdate(
-                        userId,
-                        { fullName, bio, profilePic: result.secure_url },
-                        { new: true } //new : return the updated document
-                    );
-
-                    res.status(200).json({
-                        success: true,
-                        message: "User profile updated successfully",
-                        updatedUser
-                    });
-                }
+            updatedUser = await User.findByIdAndUpdate(
+                userId,
+                { fullName, bio, profilePic: uploadResponse.secure_url },
+                { new: true } //new : return the updated document
             );
-
-            uploadOnCloudinary.end(req.file.buffer);
-            return; // Exit here since response is handled in callback
         }
-
         res.status(200).json({ success: true, message: "User profile updated successfully", updatedUser });
     } catch (error) {
         console.log("Update profile error:", error);

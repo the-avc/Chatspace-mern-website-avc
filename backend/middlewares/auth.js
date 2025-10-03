@@ -22,3 +22,37 @@ export const verifyToken = async (req, res, next) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const verifySocket = async (socket, next) => {
+    try {
+        // Get token from auth payload (preferred) or query params
+        const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+
+        if (!token) {
+            console.log("Socket connection rejected: No token provided");
+            return next(new Error("Authentication error: No token provided"));
+        }
+
+        // Verify JWT token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        if (!decoded) {
+            console.log("Socket connection rejected: Invalid token");
+            return next(new Error("Authentication error: Invalid token"));
+        }
+
+        // Get user from database
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            console.log("Socket connection rejected: User not found");
+            return next(new Error("Authentication error: User not found"));
+        }
+
+        socket.userId = user._id.toString();
+        socket.user = user;
+        console.log(`Socket authenticated for user: ${user.fullName} (${user._id})`);
+        next();
+    } catch (error) {
+        console.log("Socket authentication error:", error.message);
+        next(new Error("Authentication error: " + error.message));
+    }
+}
