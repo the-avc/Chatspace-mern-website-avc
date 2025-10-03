@@ -30,7 +30,7 @@ const App = () => {
           scale={1}
           color={currentColor}
           noiseIntensity={1.0}
-          rotation={1.0}
+          rotation={0.0}
         />
       </div>
 

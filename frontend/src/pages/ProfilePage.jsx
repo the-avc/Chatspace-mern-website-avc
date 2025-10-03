@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import avatar_icon from '../assets/avatar.png'
 import { AuthContext } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
   const { authUser, updateProfile } = useContext(AuthContext);
@@ -41,7 +42,6 @@ const ProfilePage = () => {
       }
 
       await updateProfile(formDataToSend);
-      toast.success('Profile updated successfully!');
       navigate('/'); //redirect
     } catch (error) {
       console.error('Profile update error:', error);

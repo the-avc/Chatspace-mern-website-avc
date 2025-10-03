@@ -125,7 +125,7 @@ const ChatContainer = () => {
 
         <div className='flex-1 flex flex-col'>
           <div className='flex-1 text-white text-base flex items-center gap-2'
-            title={String(selectedUser._id) === String(import.meta.env.VITE_ADMIN_ID) && "Admin"}>
+            title={String(selectedUser._id) === String(import.meta.env.VITE_ADMIN_ID) ? "Admin" : ""}>
             {selectedUser.fullName}
             {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
           </div>
