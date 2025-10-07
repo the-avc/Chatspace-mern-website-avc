@@ -1,4 +1,4 @@
-# ChatSpace - Modern MERN Stack Chat Application 💬
+# ChatSpace - Modern MERN Stack Chat Application
 
 A full-featured real-time application built with the MERN stack, featuring AI integration, advanced UI components, and media support.
 
@@ -8,19 +8,16 @@ A full-featured real-time application built with the MERN stack, featuring AI in
 ### Core Functionality
 -  **Secure JWT Authentication** - Complete user registration/login with Socket.IO JWT verification
 -  **Real-time Messaging** - Instant messaging with authenticated Socket.IO connections
--  **Advanced Media Support** - image uploads with validation (5MB limit, multiple formats)
+-  **Media Support** - image uploads with validation (5MB limit, multiple formats)
 -  **Profile Management** - Enhanced profile updates with avatar upload 
 -  **Real-time Presence** - Authenticated user online/offline status with secure socket mapping
 
 ### Advanced Features
 -  **AI Assistant Integration** - Secure chat with AI using Groq SDK
 - **AI Usage handling by Admin** - Admin can set the usage of AI for all users
-- **Admin Upload Controls** - Dynamic upload enable/disable with database validation
 - **Lazy Loading Components** - React.lazy() for TextType and Silk components
-- **Admin Panel Features** - Special admin UI controls and toggles
 -  **Rich UI Components** - Added background and text animations using react-bits
 -  **Optimized Cloud Storage** - DiskStorage + Cloudinary with automatic cleanup
--  **Production-Ready Security** - Comprehensive input validation, file type checking, and memory management
 
 ### Tech Stack
 - **Frontend**: React + Vite + TailwindCSS
@@ -40,38 +37,21 @@ A full-featured real-time application built with the MERN stack, featuring AI in
 
 - ✅ **DiskStorage Migration** - Switched from memoryStorage to diskStorage for better scalability.Multiple simultaneous uploads could exhaust server memory. No cleanup = disk space leak
 - ✅ **Automatic File Cleanup** - Temporary files automatically removed after Cloudinary upload
-- ✅ **Admin AI Control** - Admin can disable AI globally from settings. Reduces API costs when not needed
+- ✅ **Admin AI Control** - Admin can disable AI globally. Reduces API costs when not needed
 - ✅ **Dynamic Upload Controls** - Admin can toggle uploads via `checkUploadEnabled` middleware
 - ✅ **Lazy Component Loading** - React.lazy() implementation for better performance
 
 ## ⚠️ Remaining Areas for Enhancement
-
-### Medium Priority Issues
 - **CORS Configuration** - Currently allows all origins (`*`), should restrict to specific domains in production
 - **Multi-device Support** - `userSocketMap` stores one socket per user; consider supporting multiple connections
 - **Rate Limiting** - Add `express-rate-limit` to upload and authentication endpoints
-
-### Lower Priority Improvements
 - **Refresh Token Flow** - Currently uses access tokens only; consider refresh token implementation
 - **Presence Scaling** - In-memory presence won't scale across multiple instances (needs Redis adapter)
 - **Error Response Standardization** - Some endpoints return different error formats
 
-## 🎯 Key Features Breakdown
-
-### Upload System
-- **Dynamic Controls** - `checkUploadEnabled` middleware validates admin settings
-- **File Restrictions** - 5MB limit, image-only validation, AI upload blocking
-- **Temporary Storage** - DiskStorage with automatic cleanup after Cloudinary upload
-
-### Admin Features
-- **Upload Toggle** - Database-driven upload enable/disable
-- **AI Control** - Real-time AI assistant enable/disable
-- **Special UI** - Admin badges and exclusive controls
-- **Environment-Based** - Admin ID from environment variables
-
 ### Performance Optimizations
 - **Lazy Loading** - React.lazy() for TextType and Silk components
-- **Memory Management** - Proper event cleanup in useEffect hooks
+- **Memory Management** - DiskStorage with automatic cleanup after Cloudinary upload
 
 ## �📁 Project Structure
 
