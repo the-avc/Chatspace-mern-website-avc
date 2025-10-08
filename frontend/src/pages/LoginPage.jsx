@@ -115,7 +115,10 @@ const LoginPage = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className='space-y-4'>
+              <form
+                id='login-form'
+                autoComplete="on"
+                onSubmit={handleSubmit} className='space-y-4'>
                 {!isLogin && (
                   <div>
                     {/* <label className='block text-sm font-medium text-gray-300 mb-2'>

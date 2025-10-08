@@ -54,7 +54,7 @@ const App = () => {
         </Routes>
 
         <div className='absolute bottom-2 font-mono right-4 text-white/25 text-xs pointer-events-none'>
-          © 2025 Chatspace v3.1 All rights reserved.
+          © 2025 Chatspace v4.1 All rights reserved.
         </div>
       </Suspense>
     </>

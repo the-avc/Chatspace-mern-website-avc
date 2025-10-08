@@ -23,6 +23,11 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: "Hey there! I am using Chatspace.",
     },
+    refreshToken:{
+        type: String,
+        select: false,
+        default: null,
+    }
 }, { strict: false }, { timestamps: true });
 
 export const User = mongoose.model("User", UserSchema);

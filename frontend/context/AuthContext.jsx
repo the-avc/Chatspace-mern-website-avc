@@ -5,38 +5,36 @@ import axios from "axios";
 
 const backendURL = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL = backendURL;
+axios.defaults.withCredentials = true; // Enable cookies for refresh token
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [token, setToken] = useState(localStorage.getItem("token") || null); //token is stored in local storage
+    // const [token, setToken] = useState(null); //token is stored in local storage
     const [authUser, setAuthUser] = useState(null);  //this user is the logged in user
     const [onlineUsers, setOnlineUsers] = useState([]); //array of userIds who are online
     const [socket, setSocket] = useState(null);
+    const [loading, setLoading] = useState(true); //to track initial auth check
 
     //check if user is authenticated and set user data and connect to socket
     const checkAuth = async () => {
         try {
-            // const token = localStorage.getItem("token");
-            // if (!token) {
-            //     console.log("No token found in localStorage");
-            //     return;
-            // }
-            // // Set authorization header before making the request
-            // axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-            const { data } = await axios.get("/api/auth/get-profile");
+            const { data } = await axios.post("/api/auth/refresh-token");
             if (data?.success) {
-                setAuthUser(data.user);
-                connectSocket(data.user);
-            }
-        } catch (error) {
-            const errorMessage = error.response?.data?.message || error.message || "Authentication failed";
-            console.log("Error checking auth", errorMessage);
-            if (authUser) {
-                toast.error("Session expired, please login again");
+                // setAccessToken(data.token);
+                axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+                setAuthUser(data.userData);
+                connectSocket(data.userData);
+            } else {
                 logout();
             }
+        } catch (error) {
+            console.error("Auth check failed:", error);
+            if (authUser) {
+                logout();
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -45,8 +43,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await axios.post(`/api/auth/${state}`, credentials);
             if (data?.success) {
-                setToken(data.token);
-                localStorage.setItem("token", data.token);
+                // setAccessToken(data.token);
                 axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
                 setAuthUser(data.userData);
                 connectSocket(data.userData);
@@ -65,14 +62,18 @@ export const AuthProvider = ({ children }) => {
 
     //logout func to disconnect socket on logout
     const logout = async () => {
-        localStorage.removeItem("token");
-        setToken(null);
+        try {
+            await axios.post('/api/auth/logout');
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
         setAuthUser(null);
         setOnlineUsers([]);
-        axios.defaults.headers.common["Authorization"] = null;
-        toast.success("Logged out successfully");
-        if (socket && socket.disconnect) socket.disconnect();
+        // setAccessToken(null);
+        delete axios.defaults.headers.common["Authorization"];
+        if (socket && socket?.connected) socket.disconnect();
         setSocket(null);
+        toast.success("Logged out successfully");
     }
 
     //update profile func to update authUser state
@@ -103,7 +104,7 @@ export const AuthProvider = ({ children }) => {
     const connectSocket = (userData) => {
         if (!userData || socket?.connected) return;
 
-        const token = localStorage.getItem("token");
+        const token = axios.defaults.headers.common["Authorization"]?.split(" ")[1];
         if (!token) {
             console.error("No token found, cannot connect socket");
             return;
@@ -140,7 +141,6 @@ export const AuthProvider = ({ children }) => {
 
         newSocket.on('connect_error', (err) => { // Log connection errors
             console.error('Socket connection failed:', err.message);
-
             // Handle authentication errors specifically
             if (err.message.includes('Authentication error')) {
                 console.error('Socket authentication failed - token may be invalid or expired');
@@ -159,18 +159,15 @@ export const AuthProvider = ({ children }) => {
     }
 
     useEffect(() => { // on initial load, check for token and set axios header
-        if (token) {
-            localStorage.setItem("token", token);
-            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            checkAuth();
-        }
+        checkAuth();
     }, []);
 
     const value = {
-        axios, //passing axios because its configured here with baseURL and auth header
+        axios,
         authUser,
         onlineUsers,
         socket,
+        loading,
         login,
         logout,
         updateProfile,
