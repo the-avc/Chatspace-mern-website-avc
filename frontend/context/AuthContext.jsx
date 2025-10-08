@@ -17,9 +17,16 @@ export const AuthProvider = ({ children }) => {
     //check if user is authenticated and set user data and connect to socket
     const checkAuth = async () => {
         try {
+            // const token = localStorage.getItem("token");
+            // if (!token) {
+            //     console.log("No token found in localStorage");
+            //     return;
+            // }
+            // // Set authorization header before making the request
+            // axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
             const { data } = await axios.get("/api/auth/get-profile");
             if (data?.success) {
-                axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
                 setAuthUser(data.user);
                 connectSocket(data.user);
             }

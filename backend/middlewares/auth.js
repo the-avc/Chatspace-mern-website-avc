@@ -3,22 +3,33 @@ import { User } from "../models/user-model.js";
 
 export const verifyToken = async (req, res, next) => {
     try {
-        const token = req.headers?.authorization?.split(" ")[1];
+        const authHeader = req.headers?.authorization;
+        const token = authHeader.split(" ")[1];
         if (!token) {
-            return res.status(401).json({ message: "Unauthorized" });
+            // console.log("Auth error: No token in authorization header");
+            return res.status(401).json({ message: "Unauthorized - No token provided" });
         }
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
         if (!decoded) {
-            return res.status(401).json({ message: "Unauthorized" });
+            console.log("Auth error: Token verification failed");
+            return res.status(401).json({ message: "Unauthorized - Invalid token" });
         }
         const user = await User.findById(decoded.id);
         if (!user) {
-            return res.status(401).json({ message: "Unauthorized" });
+            console.log("Auth error: User not found for token:", decoded.id);
+            return res.status(401).json({ message: "Unauthorized - User not found" });
         }
         req.user = user;
         next();
     } catch (error) {
-        console.log("Auth error:", error);
+        console.log("Auth error:", error.message);
+        
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: "Unauthorized - Invalid token" });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: "Unauthorized - Token expired" });
+        }
+        
         res.status(500).json({ message: "Internal server error" });
     }
 }
