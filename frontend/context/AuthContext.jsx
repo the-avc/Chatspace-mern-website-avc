@@ -19,14 +19,17 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await axios.get("/api/auth/get-profile");
             if (data?.success) {
+                axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
                 setAuthUser(data.user);
                 connectSocket(data.user);
             }
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || "Authentication failed";
             console.log("Error checking auth", errorMessage);
-            toast.error("Session expired, please login again");
-            logout();
+            if (authUser) {
+                toast.error("Session expired, please login again");
+                logout();
+            }
         }
     };
 
@@ -35,11 +38,11 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await axios.post(`/api/auth/${state}`, credentials);
             if (data?.success) {
-                setAuthUser(data.userData);
-                connectSocket(data.userData);
-                axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
                 setToken(data.token);
                 localStorage.setItem("token", data.token);
+                axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+                setAuthUser(data.userData);
+                connectSocket(data.userData);
                 toast.success(data.message);
                 return { success: true, user: data.userData, isSignup: state === 'signup' };
             } else {
