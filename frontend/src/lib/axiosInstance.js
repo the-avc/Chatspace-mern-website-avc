@@ -5,57 +5,48 @@ const backendURL = import.meta.env.VITE_BACKEND_URL;
 // Create axios instance
 const axiosInstance = axios.create({
     baseURL: backendURL,
-    withCredentials: true, // Enable cookies for refresh token
+    withCredentials: true,
 });
 
-// Variable to track current access token (in memory only)
+// Token management
 let currentAccessToken = null;
-let isRefreshing = false;
 
-// Function to set access token
 export const setAccessToken = (token) => {
     currentAccessToken = token;
-    if (token) {
-        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else {
-        delete axiosInstance.defaults.headers.common["Authorization"];
-    }
+    axiosInstance.defaults.headers.common["Authorization"] = token ? `Bearer ${token}` : undefined;
 };
 
-// Function to get current access token
 export const getAccessToken = () => currentAccessToken;
 
-// Simplified response interceptor for token refresh
+// Response interceptor for automatic token refresh
 axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalRequest = error.config;
-
-        // Only handle 401 errors and avoid infinite loops
-        if (error.response?.status === 401 && !originalRequest._retry && !isRefreshing) {
+        const { config: originalRequest, response } = error;
+        
+        // Only handle 401s that haven't been retried and aren't refresh requests
+        if (response?.status === 401 && !originalRequest._retry && 
+            !originalRequest.url?.includes('/refresh-token')) {
+            
             originalRequest._retry = true;
-            isRefreshing = true;
-
+            
             try {
-                // Try to refresh token using HTTP-only cookie
-                const refreshResponse = await axios.post(`${backendURL}/api/auth/refresh-token`, {}, {
-                    withCredentials: true
-                });
-
-                if (refreshResponse.data?.success && refreshResponse.data.token) {
-                    setAccessToken(refreshResponse.data.token);
-                    originalRequest.headers["Authorization"] = `Bearer ${refreshResponse.data.token}`;
+                // Use fresh axios to avoid interceptor loops
+                const refreshAxios = axios.create({ baseURL: backendURL, withCredentials: true });
+                const { data } = await refreshAxios.post('/api/auth/refresh-token');
+                
+                if (data?.success && data.token) {
+                    setAccessToken(data.token);
+                    originalRequest.headers.Authorization = `Bearer ${data.token}`;
                     return axiosInstance(originalRequest);
                 }
-            } catch (refreshError) {
-                // Refresh failed, clear token
-                setAccessToken(null);
-                window.location.href = "/login";
-            } finally {
-                isRefreshing = false;
+            } catch {
+                // Refresh failed
             }
+            
+            setAccessToken(null);
         }
-
+        
         return Promise.reject(error);
     }
 );

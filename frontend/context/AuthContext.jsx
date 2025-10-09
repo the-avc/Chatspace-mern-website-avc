@@ -1,38 +1,34 @@
 import { createContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
-import axios from "axios";
+import axiosInstance, { setAccessToken, getAccessToken } from "../src/lib/axiosInstance";
 
 const backendURL = import.meta.env.VITE_BACKEND_URL;
-axios.defaults.baseURL = backendURL;
-axios.defaults.withCredentials = true; // Enable cookies for refresh token
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    // const [token, setToken] = useState(null); //token is stored in local storage
-    const [authUser, setAuthUser] = useState(null);  //this user is the logged in user
-    const [onlineUsers, setOnlineUsers] = useState([]); //array of userIds who are online
+    const [authUser, setAuthUser] = useState(null);
+    const [onlineUsers, setOnlineUsers] = useState([]);
     const [socket, setSocket] = useState(null);
-    const [loading, setLoading] = useState(true); //to track initial auth check
+    const [loading, setLoading] = useState(true);
 
     //check if user is authenticated and set user data and connect to socket
     const checkAuth = async () => {
         try {
-            const { data } = await axios.post("/api/auth/refresh-token");
+            const { data } = await axiosInstance.post("/api/auth/refresh-token");
             if (data?.success) {
-                // setAccessToken(data.token);
-                axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+                setAccessToken(data.token);
                 setAuthUser(data.userData);
                 connectSocket(data.userData);
             } else {
-                logout();
+                setAccessToken(null);
+                setAuthUser(null);
             }
         } catch (error) {
             console.error("Auth check failed:", error);
-            if (authUser) {
-                logout();
-            }
+            setAccessToken(null);
+            setAuthUser(null);
         } finally {
             setLoading(false);
         }
@@ -41,10 +37,9 @@ export const AuthProvider = ({ children }) => {
     //login func to handle socket connection on login
     const login = async (state, credentials) => {
         try {
-            const { data } = await axios.post(`/api/auth/${state}`, credentials);
+            const { data } = await axiosInstance.post(`/api/auth/${state}`, credentials);
             if (data?.success) {
-                // setAccessToken(data.token);
-                axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+                setAccessToken(data.token);
                 setAuthUser(data.userData);
                 connectSocket(data.userData);
                 toast.success(data.message);
@@ -63,14 +58,13 @@ export const AuthProvider = ({ children }) => {
     //logout func to disconnect socket on logout
     const logout = async () => {
         try {
-            await axios.post('/api/auth/logout');
+            await axiosInstance.post('/api/auth/logout');
         } catch (error) {
             console.error("Logout error:", error);
         }
         setAuthUser(null);
         setOnlineUsers([]);
-        // setAccessToken(null);
-        delete axios.defaults.headers.common["Authorization"];
+        setAccessToken(null);
         if (socket && socket?.connected) socket.disconnect();
         setSocket(null);
         toast.success("Logged out successfully");
@@ -79,7 +73,7 @@ export const AuthProvider = ({ children }) => {
     //update profile func to update authUser state
     const updateProfile = async (formData) => {
         try {
-            const { data } = await axios.put("/api/auth/update-profile", formData, {
+            const { data } = await axiosInstance.put("/api/auth/update-profile", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -104,7 +98,7 @@ export const AuthProvider = ({ children }) => {
     const connectSocket = (userData) => {
         if (!userData || socket?.connected) return;
 
-        const token = axios.defaults.headers.common["Authorization"]?.split(" ")[1];
+        const token = getAccessToken();
         if (!token) {
             console.error("No token found, cannot connect socket");
             return;
@@ -163,7 +157,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const value = {
-        axios,
+        axios: axiosInstance, // Provide axiosInstance instead of plain axios
         authUser,
         onlineUsers,
         socket,
