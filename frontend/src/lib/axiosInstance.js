@@ -10,6 +10,7 @@ const axiosInstance = axios.create({
 
 // Token management
 let currentAccessToken = null;
+let tokenRefreshFail=null;
 
 export const setAccessToken = (token) => {
     currentAccessToken = token;
@@ -18,35 +19,43 @@ export const setAccessToken = (token) => {
 
 export const getAccessToken = () => currentAccessToken;
 
+export const setTokenRefreshFailCallback = (cb) =>{
+    tokenRefreshFail=cb;
+}
+
 // Response interceptor for automatic token refresh
 axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         const { config: originalRequest, response } = error;
-        
+
         // Only handle 401s that haven't been retried and aren't refresh requests
-        if (response?.status === 401 && !originalRequest._retry && 
+        if (response?.status === 401 && !originalRequest._retry &&
             !originalRequest.url?.includes('/refresh-token')) {
-            
+
             originalRequest._retry = true;
-            
+
             try {
                 // Use fresh axios to avoid interceptor loops
                 const refreshAxios = axios.create({ baseURL: backendURL, withCredentials: true });
                 const { data } = await refreshAxios.post('/api/auth/refresh-token');
-                
+
                 if (data?.success && data.token) {
                     setAccessToken(data.token);
                     originalRequest.headers.Authorization = `Bearer ${data.token}`;
                     return axiosInstance(originalRequest);
                 }
-            } catch {
+            } catch (err) {
                 // Refresh failed
+                console.log("refresh failed: ", err);
+                // window.location.replace("/login");
+                if(tokenRefreshFail) tokenRefreshFail();
+                return Promise.reject(error);
             }
-            
+
             setAccessToken(null);
         }
-        
+
         return Promise.reject(error);
     }
 );

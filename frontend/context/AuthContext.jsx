@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
-import axiosInstance, { setAccessToken, getAccessToken } from "../src/lib/axiosInstance";
+import axiosInstance, { setAccessToken, getAccessToken, setTokenRefreshFailCallback } from "../src/lib/axiosInstance";
 
 const backendURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -12,6 +12,22 @@ export const AuthProvider = ({ children }) => {
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [socket, setSocket] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    //when token refresh fails => re-route
+    const handleTokenRefreshFail = () => {
+        // console.log("Token refresh failed - starting cleanup");
+        // console.log("Socket connected:", socket?.connected);
+        setAuthUser(null);
+        setAccessToken(null);
+        if (socket && socket?.connected) socket.disconnect();
+        setSocket(null);
+        setOnlineUsers([]);
+        // console.log("Cleanup completed");
+    }
+
+    useEffect(() => {
+        setTokenRefreshFailCallback(handleTokenRefreshFail);
+    }, []);
 
     //check if user is authenticated and set user data and connect to socket
     const checkAuth = async () => {

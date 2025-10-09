@@ -55,6 +55,11 @@ export const ChatProvider = ({ children }) => {
         } catch (error) {
             console.error("Send message error:", error);
             const errorMessage = error.response?.data?.message || error.message || "Failed to send message";
+            // Check if it's an authentication error
+            if (error.response?.status === 401) {
+                toast.error("Session expired. Please login again.");
+                return;
+            }
             toast.error(errorMessage);
         }
     }
