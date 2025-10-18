@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import axiosInstance, { setAccessToken, getAccessToken, setTokenRefreshFailCallback } from "../src/lib/axiosInstance";
@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [socket, setSocket] = useState(null);
     const [loading, setLoading] = useState(true);
+    const socketRef = useRef(null);
 
     //when token refresh fails => re-route
     const handleTokenRefreshFail = () => {
@@ -19,7 +20,15 @@ export const AuthProvider = ({ children }) => {
         // console.log("Socket connected:", socket?.connected);
         setAuthUser(null);
         setAccessToken(null);
-        if (socket && socket?.connected) socket.disconnect();
+        const s = socketRef.current;
+        if (s?.connected) {
+            try {
+                s.disconnect();
+            } catch (err) {
+                console.error("Error disconnecting socket:", err);
+            }
+        }
+        // if (socket && socket?.connected) socket.disconnect();
         setSocket(null);
         setOnlineUsers([]);
         // console.log("Cleanup completed");
@@ -27,7 +36,10 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         setTokenRefreshFailCallback(handleTokenRefreshFail);
-    }, []);
+        return () => {
+            setTokenRefreshFailCallback(null);
+        }
+    }, [handleTokenRefreshFail]);
 
     //check if user is authenticated and set user data and connect to socket
     const checkAuth = async () => {
@@ -78,10 +90,20 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error("Logout error:", error);
         }
+        const s = socketRef.current;
+        if (s?.connected) {
+            try {
+                s.disconnect();
+            }
+            catch (err) {
+                console.error("Error disconnecting socket:", err);
+            }
+        }
+        socketRef.current = null;
         setAuthUser(null);
         setOnlineUsers([]);
         setAccessToken(null);
-        if (socket && socket?.connected) socket.disconnect();
+        // if (socket && socket?.connected) socket.disconnect();
         setSocket(null);
         toast.success("Logged out successfully");
     }
@@ -113,6 +135,7 @@ export const AuthProvider = ({ children }) => {
     //connect socket to handle real-time events
     const connectSocket = (userData) => {
         if (!userData || socket?.connected) return;
+        if (socketRef.current?.connected) return;
 
         const token = getAccessToken();
         if (!token) {
@@ -131,6 +154,7 @@ export const AuthProvider = ({ children }) => {
             },
         });
         newSocket.connect();
+        socketRef.current = newSocket;
         setSocket(newSocket);
 
         newSocket.on("getOnlineUsers", (userIds) => {
