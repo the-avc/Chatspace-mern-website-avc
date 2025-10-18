@@ -23,10 +23,10 @@ A full-featured real-time application built with the MERN stack, featuring AI in
 - **Frontend**: React + Vite + TailwindCSS
 - **Backend**: Node.js + Express + Socket.IO
 - **Database**: MongoDB with Mongoose ODM  
-- **Authentication**: JWT with bcryptjs
+- **Authentication**: JWT (access + refresh) with bcryptjs
 - **File Upload**: Multer + Cloudinary
 - **AI Integration**: Groq SDK
-- **Deployment**: Vercel-ready configuration
+- **Deployment**: Vercel config included; Socket.IO needs a persistent runtime
 
 ## ✅ Recent Security & Performance Improvements
 
@@ -42,18 +42,17 @@ A full-featured real-time application built with the MERN stack, featuring AI in
 - ✅ **Lazy Component Loading** - React.lazy() implementation for better performance
 
 ## ⚠️ Remaining Areas for Enhancement
-- **CORS Configuration** - Currently allows all origins (`*`), should restrict to specific domains in production
+- **CORS Configuration** - Bind to `FRONTEND_URL` and restrict to production domains
 - **Multi-device Support** - `userSocketMap` stores one socket per user; consider supporting multiple connections
 - **Rate Limiting** - Add `express-rate-limit` to upload and authentication endpoints
-- **Refresh Token Flow** - Currently uses access tokens only; consider refresh token implementation
-- **Presence Scaling** - In-memory presence won't scale across multiple instances (needs Redis adapter)
-- **Error Response Standardization** - Some endpoints return different error formats
+- **Refresh Token flow** - Add checks for cookie-backed routes (refresh/logout)
+- **Error Response Standardization** - Ensure consistent error format across endpoints
 
 ### Performance Optimizations
 - **Lazy Loading** - React.lazy() for TextType and Silk components
 - **Memory Management** - DiskStorage with automatic cleanup after Cloudinary upload
 
-## �📁 Project Structure
+## 📁 Project Structure
 
 ```
 chat-app/
@@ -64,7 +63,7 @@ chat-app/
 │   ├── server.js              # Main server file with Socket.IO
 │   ├── package.json           # Backend dependencies
 │   ├── vercel.json            # Vercel deployment config
-│   ├── controllers/           # Business logic
+│   ├── controllers/           
 │   │   ├── ai-controllers.js  
 │   │   ├── message-controllers.js 
 │   │   └── user-controllers.js
@@ -74,12 +73,12 @@ chat-app/
 │   │   └── util.js            # JWT utilities
 │   ├── middlewares/           # Express middlewares
 │   │   ├── auth.js            # JWT verification
-│   │   └── multer.js          # File upload handling
+│   │   └── multer.js          # File upload handling (5MB limit, type checks)
 │   ├── models/                # MongoDB schemas
 │   │   ├── message-model.js
 │   │   └── user-model.js
 │   └── routes/                # API routes
-│       ├── ai-routes.js       endpoints
+│       ├── ai-routes.js
 │       ├── messages-routes.js
 │       └── user-routes.js
 └── frontend/                  # React application
@@ -115,6 +114,8 @@ chat-app/
 ### Authentication
 - `POST /api/auth/signup` - Register new user
 - `POST /api/auth/login` - Login user
+- `POST /api/auth/refresh-token` - Refresh access token (httpOnly cookie)
+- `POST /api/auth/logout` - Logout user (clears cookie and revokes server token)
 - `GET /api/auth/get-profile` - Get current user (protected)
 - `PUT /api/auth/update-profile` - Update profile with avatar (protected)
 
@@ -125,17 +126,22 @@ chat-app/
 - `PUT /api/messages/seen/:msgId` - Mark message as read
 
 ### AI Assistant (Protected)
-- `POST /api/ai/ask` - Send message to AI (requires aiEnabled=true)
-- `PUT /api/ai/limiter` - Toggle AI globally (admin only)
+- `POST /api/ai/chat` - Send message to AI (requires aiEnabled=true)
+- `POST /api/ai/limiter` - Toggle AI globally (admin only)
 - `GET /api/ai/limiter` - Get the AI availability status
+
+### Health
+- `GET /api/status` - Basic server health check
 
 ### Admin Controls
 - **Upload Toggle** - Admin can enable/disable uploads via database flag
 - **AI Toggle** - Admin can control AI availability in real-time
 
-**Note:** Protected endpoints require `Authorization: Bearer <token>` header.
+**Note:**
+- Protected endpoints require `Authorization: Bearer <token>` header.
+- Refresh tokens are stored in an httpOnly cookie; frontend uses `withCredentials: true` (configured in `frontend/src/lib/axiosInstance.js`).
 
-## � Installation & Setup
+## 🛠️ Installation & Setup
 
 ### Backend Setup
 
@@ -148,14 +154,16 @@ chat-app/
    ```powershell
    # Server Configuration
    PORT=5000
+   FRONTEND_URL=http://localhost:5173
    
    # Database
    MONGODB_URI=mongodb://localhost:27017
    
    # JWT Configuration
-   JWT_SECRET_KEY=your-super-secret-jwt-key
-   ACCESS_TOKEN_EXPIRY=1d
-   REFRESH_TOKEN_EXPIRY=10d
+   JWT_SECRET_KEY=your-access-token-secret
+   JWT_REFRESH_SECRET_KEY=your-refresh-token-secret
+   ACCESS_TOKEN_EXPIRY=15m
+   REFRESH_TOKEN_EXPIRY=7d
    
    # Cloudinary Configuration
    CLOUDINARY_CLOUD_NAME=your-cloud-name
@@ -173,7 +181,6 @@ chat-app/
 3. **Start the backend server**
    ```powershell
    npm start
-   npx nodemon
    ```
 
 ### Frontend Setup
@@ -227,4 +234,5 @@ This project is licensed under the ISC License.
 For detailed implementation notes, see:
 - [`multerchat.md`](multerchat.md) - File upload implementation details
 - [`socketchat.md`](socketchat.md) - Socket.IO authentication guide
+ - [`tokenchat.md`](tokenchat.md) - Token refresh and auth flow
 

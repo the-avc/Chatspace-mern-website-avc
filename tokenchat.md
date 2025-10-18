@@ -22,8 +22,8 @@ This chat application implements a secure JWT-based authentication system using 
 
 The authentication system follows a **dual-token approach**:
 
-- **Access Token**: Short-lived (15 minutes) for API authentication
-- **Refresh Token**: Long-lived (7 days) stored securely in HTTP-only cookies
+- **Access Token**: Short-lived (default 15 minutes, configurable) for API authentication
+- **Refresh Token**: Long-lived (default 7 days, configurable) stored securely in HTTP-only cookies
 - **Automatic Token Refresh**: Seamless token renewal without user intervention
 - **Socket Authentication**: Real-time connections authenticated with JWT tokens
 
@@ -48,14 +48,14 @@ graph TB
 
 ### Access Token
 - **Purpose**: Authenticate API requests
-- **Lifetime**: 15 minutes (configurable via `ACCESS_TOKEN_EXPIRY`)
+- **Lifetime**: 15 minutes by default (configurable via `ACCESS_TOKEN_EXPIRY`, e.g., `5m` in production)
 - **Storage**: In-memory (frontend state)
 - **Security**: Short-lived to minimize security risks
 - **Usage**: Included in `Authorization: Bearer <token>` header
 
 ### Refresh Token
 - **Purpose**: Generate new access tokens without re-authentication
-- **Lifetime**: 7 days (configurable via `REFRESH_TOKEN_EXPIRY`)
+- **Lifetime**: 7 days by default (configurable via `REFRESH_TOKEN_EXPIRY`)
 - **Storage**: HTTP-only cookie (secure, not accessible via JavaScript)
 - **Security**: Long-lived but stored securely
 - **Usage**: Automatically sent with requests to `/refresh-token` endpoint
@@ -198,7 +198,7 @@ export const login = async (req, res) => {
         // Set secure HTTP-only cookie
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,        // Not accessible via JavaScript
-            sameSite: 'strict',    // CSRF protection
+            sameSite: 'strict',    // Good for same-site; use 'none' for cross-site setups
             secure: process.env.NODE_ENV === 'production', // HTTPS only in production
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
@@ -400,6 +400,8 @@ export const logout = async (req, res) => {
 - **Cookie Clearing**: Clear HTTP-only cookie on client
 - **Complete Session Termination**: Ensures no further token refresh possible
 
+Note: Logout endpoint is protected (requires a valid access token via `verifyToken`).
+
 ### 7. Socket Authentication (`backend/middlewares/auth.js`)
 
 ```javascript
@@ -464,6 +466,7 @@ const axiosInstance = axios.create({
 
 // Token management
 let currentAccessToken = null;
+let tokenRefreshFail = null; // optional global cleanup callback
 
 // Set access token in memory and axios headers
 export const setAccessToken = (token) => {
@@ -473,6 +476,11 @@ export const setAccessToken = (token) => {
 
 // Get current access token
 export const getAccessToken = () => currentAccessToken;
+
+// Allow app to register a callback when refresh fails (e.g., to disconnect socket and clear state)
+export const setTokenRefreshFailCallback = (cb) => {
+    tokenRefreshFail = cb;
+};
 ```
 
 **Configuration Benefits:**
@@ -511,7 +519,8 @@ axiosInstance.interceptors.response.use(
                     return axiosInstance(originalRequest);
                 }
             } catch {
-                // Refresh failed - clear token
+                // Refresh failed - trigger global cleanup if provided
+                if (tokenRefreshFail) tokenRefreshFail();
             }
             
             setAccessToken(null);
@@ -616,6 +625,7 @@ const logout = async () => {
     } catch (error) {
         console.error("Logout error:", error);
     }
+    // Clean up auth and presence state
     setAuthUser(null);
     setOnlineUsers([]);
     setAccessToken(null);
@@ -808,6 +818,7 @@ REFRESH_TOKEN_EXPIRY=7d
 
 # Environment
 NODE_ENV=production  # or development
+FRONTEND_URL=http://localhost:5173  # used for CORS
 ```
 
 ### Frontend Environment Variables

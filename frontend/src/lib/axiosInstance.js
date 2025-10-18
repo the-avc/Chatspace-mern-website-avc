@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 
 // Token management
 let currentAccessToken = null;
-let tokenRefreshFail=null;
+let tokenRefreshFail = null;
 
 export const setAccessToken = (token) => {
     currentAccessToken = token;
@@ -19,8 +19,8 @@ export const setAccessToken = (token) => {
 
 export const getAccessToken = () => currentAccessToken;
 
-export const setTokenRefreshFailCallback = (cb) =>{
-    tokenRefreshFail=cb;
+export const setTokenRefreshFailCallback = (cb) => {
+    tokenRefreshFail = cb;
 }
 
 // Response interceptor for automatic token refresh
@@ -49,7 +49,7 @@ axiosInstance.interceptors.response.use(
                 // Refresh failed
                 console.log("refresh failed: ", err);
                 // window.location.replace("/login");
-                if(tokenRefreshFail) tokenRefreshFail();
+                if (tokenRefreshFail) tokenRefreshFail();
                 return Promise.reject(error);
             }
 
