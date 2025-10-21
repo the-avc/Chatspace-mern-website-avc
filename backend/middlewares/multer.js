@@ -2,22 +2,23 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { User } from '../models/user-model.js';
+import os from 'os';
 
-// Ensure temp directory exists
-const tempDir = './public/temp';
+// Use serverless-safe temp directory
+const tempDir = path.join(os.tmpdir(), 'chat-app-uploads');
 if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir, { recursive: true });
 }
 
 // Configure storage
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, './public/temp');
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
+  destination: function (req, file, cb) {
+    cb(null, tempDir); // use /tmp on Vercel
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
 }); // Store files in memory for direct upload to cloudinary
 
 // File filter function
