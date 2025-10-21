@@ -11,7 +11,7 @@ import { AuthContext } from '../context/AuthContext'
 const HomePage = React.lazy(() => import('./pages/HomePage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
-const Silk = React.lazy(() => import('../react-bits/Silk/Silk'));
+const Silk = React.lazy(() => import('./components/Silk/Silk'));
 
 const App = () => {
   const { authUser } = useContext(AuthContext);

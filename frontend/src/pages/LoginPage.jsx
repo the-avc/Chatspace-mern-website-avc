@@ -4,7 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { assets } from '../assets/assets';
 // import TextType from '../../react-bits/TextType/TextType';
 
-const TextType = React.lazy(() => import('../../react-bits/TextType/TextType'));
+const TextType = React.lazy(() => import('../components/TextType/TextType'));
 
 const LoginPage = () => {
   const navigate = useNavigate();
