@@ -38,7 +38,7 @@ const LoginPage = () => {
 
   return (
     <>
-  <div className='min-h-[100dvh] h-[100dvh] overflow-hidden flex'>
+      <div className='min-h-[100dvh] h-[100dvh] overflow-hidden flex'>
         {/*------------------------ Left Side - Logo/Branding-------------------------------- */}
         <div className='hidden md:flex md:flex-1 bg-gradient-to-br items-center justify-center bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6'>
           <div className='text-center'>
@@ -87,8 +87,8 @@ const LoginPage = () => {
 
             {/* Login/Signup Form */}
             <div className='bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6'>
-        <div className='text-center mb-6'>
-          <h2 className='font-bold text-white mb-2 text-fluid-2xl'>
+              <div className='text-center mb-6'>
+                <h2 className='font-bold text-white mb-2 text-fluid-2xl'>
                   {isLogin ? 'Welcome Back' : 'Join Chatspace'}
                 </h2>
 
@@ -115,7 +115,10 @@ const LoginPage = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className='space-y-4'>
+              <form
+                id='login-form'
+                autoComplete="on"
+                onSubmit={handleSubmit} className='space-y-4'>
                 {!isLogin && (
                   <div>
                     {/* <label className='block text-sm font-medium text-gray-300 mb-2'>
