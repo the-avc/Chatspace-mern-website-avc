@@ -50,11 +50,11 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className='min-h-screen bg-cover bg-no-repeat flex items-center justify-center'>
+    <div className='min-h-[100dvh] h-[100dvh] overflow-hidden bg-cover bg-no-repeat flex items-center justify-center'>
       <div className='w-5/6 max-w-2xl backdrop-blur-2xl text-gray-300 border-2 border-gray-600 flex items-center justify-between max-sm:flex-col-reverse rounded-lg'>
 
         <form onSubmit={handleSubmit} className='flex flex-col gap-5 p-10 flex-1'>
-          <h3 className='text-lg'>Profile details</h3>
+          <h3 className='text-fluid-lg'>Profile details</h3>
           <label htmlFor="avatar" className='flex items-center gap-3 cursor-pointer'>
             <input
               type="file"
@@ -76,10 +76,10 @@ const ProfilePage = () => {
           </label>
 
 
-          <input type="text" name="name" placeholder='Your Name' className='w-full bg-gray-800/50 rounded-full py-2 px-3 text-sm placeholder:text-gray-400 border border-gray-700/50 focus:outline-none focus:border-blue-500/50 transition-colors'
+          <input type="text" name="name" placeholder='Your Name' className='w-full bg-gray-800/50 rounded-full py-2 px-3 text-fluid-sm placeholder:text-gray-400 border border-gray-700/50 focus:outline-none focus:border-blue-500/50 transition-colors'
             value={formData.name} onChange={handleChange} />
 
-          <textarea name="bio" rows="3" placeholder='Bio' className='w-full bg-gray-800/50 rounded-lg py-2 px-3 text-sm placeholder:text-gray-400 border border-gray-700/50 focus:outline-none focus:border-blue-500/50 transition-colors resize-none'
+          <textarea name="bio" rows="3" placeholder='Bio' className='w-full bg-gray-800/50 rounded-lg py-2 px-3 text-fluid-sm placeholder:text-gray-400 border border-gray-700/50 focus:outline-none focus:border-blue-500/50 transition-colors resize-none'
             value={formData.bio} onChange={handleChange}></textarea>
 
 
@@ -87,7 +87,7 @@ const ProfilePage = () => {
             <button type='submit' className='bg-gradient-to-r from-purple-400 to-violet-600 text-white text-sm px-5 py-2 rounded-full cursor-pointer'>
               Save
             </button>
-            <button type='button' onClick={() => navigate(-1)} className='text-sm px-5 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors'>
+            <button type='button' onClick={() => navigate(-1)} className='text-fluid-sm px-5 py-2 rounded-full border border-gray-600 hover:border-gray-400 transition-colors'>
               Cancel
             </button>
           </div>

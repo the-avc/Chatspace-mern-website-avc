@@ -115,10 +115,10 @@ const ChatContainer = () => {
 
 
   return selectedUser ? (
-    <div className='h-full overflow-scroll relative backdrop-blur-lg'>
+    <div className='h-full overflow-hidden overscroll-none relative backdrop-blur-lg border border-white/20 rounded-xl sm:border-0 sm:rounded-none'>
 
       {/* -------------------HEADER-------------------------------------  */}
-      <div className='flex items-center gap-2 py-2 mx-3 border-b border-stone-500'>
+  <div className='flex items-center gap-2 py-2 mx-3 border-b border-stone-500'>
         <img
           src={selectedUser.profilePic || assets.avatar_icon}
           srcSet={`${selectedUser.profilePic || assets.avatar_icon} 1x, ${selectedUser.profilePic || assets.avatar_icon} 2x`}
@@ -128,12 +128,12 @@ const ChatContainer = () => {
         />
 
         <div className='flex-1 flex flex-col'>
-          <div className='flex-1 text-white text-base flex items-center gap-2'
+          <div className='flex-1 text-white text-fluid-base flex items-center gap-2'
             title={String(selectedUser._id) === String(import.meta.env.VITE_ADMIN_ID) ? "Admin" : ""}>
             {selectedUser.fullName}
             {onlineUsers.includes(selectedUser._id) && <span className='w-2 h-2 rounded-full bg-green-500'></span>}
           </div>
-          <span className='text-sm text-gray-400 italic'>{selectedUser.bio}</span>
+          <span className='text-fluid-sm text-gray-400 italic'>{selectedUser.bio}</span>
         </div>
 
 
@@ -177,14 +177,14 @@ const ChatContainer = () => {
                   />
                 )}
                 {msg.text && (
-                  <div className={`max-w-[280px] p-3 rounded-2xl text-sm ${isCurrentUser
+                  <div className={`max-w-[280px] p-3 rounded-2xl text-fluid-sm ${isCurrentUser
                     ? 'bg-[#635FC7] text-white rounded-br-md'
                     : 'bg-[#8185B2]/20 text-white rounded-bl-md'
                     }`}>
                     {msg.text}
                   </div>
                 )}
-                <p className='text-xs text-gray-400 mt-1 px-2'>{formatTimestamp(msg.createdAt)}</p>
+                <p className='text-fluid-xs text-gray-400 mt-1 px-2'>{formatTimestamp(msg.createdAt)}</p>
               </div>
 
               {/* Profile picture for sent messages */}
@@ -203,7 +203,7 @@ const ChatContainer = () => {
 
       {/* -------------------INPUT AREA-------------------------------------  */}
       <div className='absolute bottom-0 left-0 right-0 flex items-center gap-3 p-3'>
-        <div className='flex items-center flex-1 bg-gray-100/12 px-3 rounded-full'>
+        <div className='flex items-center flex-1 px-3 rounded-full'>
           <input
             type="text"
             placeholder='Type a message...'

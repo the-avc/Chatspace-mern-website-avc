@@ -8,3 +8,23 @@
   -webkit-user-drag: none;
 }
 /* google fonts sanss serif */
+
+/* Fluid typography scale for responsive font sizing */
+:root {
+  --fluid-xs: clamp(0.75rem, 0.68rem + 0.5vw, 0.875rem);
+  --fluid-sm: clamp(0.875rem, 0.8rem + 0.6vw, 1rem);
+  --fluid-base: clamp(0.95rem, 0.9rem + 0.8vw, 1.1rem);
+  --fluid-lg: clamp(1.125rem, 1rem + 1vw, 1.25rem);
+  --fluid-xl: clamp(1.25rem, 1.1rem + 1.2vw, 1.5rem);
+  --fluid-2xl: clamp(1.5rem, 1.3rem + 1.6vw, 1.875rem);
+  --fluid-3xl: clamp(1.875rem, 1.6rem + 2vw, 2.25rem);
+}
+
+/* Utilities (work with Tailwind classes) */
+.text-fluid-xs { font-size: var(--fluid-xs); }
+.text-fluid-sm { font-size: var(--fluid-sm); }
+.text-fluid-base { font-size: var(--fluid-base); }
+.text-fluid-lg { font-size: var(--fluid-lg); }
+.text-fluid-xl { font-size: var(--fluid-xl); }
+.text-fluid-2xl { font-size: var(--fluid-2xl); }
+.text-fluid-3xl { font-size: var(--fluid-3xl); }

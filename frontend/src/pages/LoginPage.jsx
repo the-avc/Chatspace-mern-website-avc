@@ -38,7 +38,7 @@ const LoginPage = () => {
 
   return (
     <>
-      <div className='min-h-screen flex'>
+  <div className='min-h-[100dvh] h-[100dvh] overflow-hidden flex'>
         {/*------------------------ Left Side - Logo/Branding-------------------------------- */}
         <div className='hidden md:flex md:flex-1 bg-gradient-to-br items-center justify-center bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6'>
           <div className='text-center'>
@@ -50,7 +50,7 @@ const LoginPage = () => {
                 loading='lazy' />
               {/* <h1 className='text-4xl font-bold text-white'>Chatspace</h1> */}
             </div>
-            <div className='text-white text-xl mb-8 font-medium'>
+            <div className='text-white text-fluid-lg mb-8 font-medium'>
               Connect with {' '}
               <Suspense fallback={<span className='inline-block ml-2'>...</span>}>
                 <TextType
@@ -64,7 +64,7 @@ const LoginPage = () => {
                 />
               </Suspense>
             </div>
-            <div className='space-y-4 text-blue-100'>
+            <div className='space-y-4 text-blue-100 text-fluid-base'>
               <div className='flex items-center gap-3'>
                 <i className="fi fi-rr-check-circle text-green-300"></i>
                 <span>Real-time messaging</span>
@@ -87,8 +87,8 @@ const LoginPage = () => {
 
             {/* Login/Signup Form */}
             <div className='bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6'>
-              <div className='text-center mb-6'>
-                <h2 className='text-3xl font-bold text-white mb-2'>
+        <div className='text-center mb-6'>
+          <h2 className='font-bold text-white mb-2 text-fluid-2xl'>
                   {isLogin ? 'Welcome Back' : 'Join Chatspace'}
                 </h2>
 
@@ -97,7 +97,7 @@ const LoginPage = () => {
               <div className='flex mb-8 bg-white/10 rounded-2xl p-1'>
                 <button
                   onClick={() => setIsLogin(true)}
-                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-300 ${isLogin
+                  className={`flex-1 py-3 px-4 text-fluid-sm font-medium rounded-xl transition-all duration-300 ${isLogin
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-blue-500/30'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                     }`}
@@ -106,7 +106,7 @@ const LoginPage = () => {
                 </button>
                 <button
                   onClick={() => setIsLogin(false)}
-                  className={`flex-1 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-300 ${!isLogin
+                  className={`flex-1 py-3 px-4 text-fluid-sm font-medium rounded-xl transition-all duration-300 ${!isLogin
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                     }`}
@@ -129,7 +129,7 @@ const LoginPage = () => {
                         value={formData.fullName}
                         onChange={handleInputChange}
                         placeholder="Enter your full name"
-                        className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors'
+                        className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors text-fluid-base'
                         required={!isLogin}
                         minLength={3}
                       />
@@ -149,7 +149,7 @@ const LoginPage = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="Enter your email"
-                      className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors'
+                      className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors text-fluid-base'
                       required
                     />
                   </div>
@@ -167,7 +167,7 @@ const LoginPage = () => {
                       value={formData.password}
                       onChange={handleInputChange}
                       placeholder="Enter your password"
-                      className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors'
+                      className='w-full bg-gray-800/50 border border-gray-700/50 rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-colors text-fluid-base'
                       required
                       minLength={6}
                     />
@@ -187,7 +187,7 @@ const LoginPage = () => {
 
                 <button
                   type="submit"
-                  className='w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 cursor-pointer'
+                  className='w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 cursor-pointer text-fluid-base'
                 >
                   {isLogin ? 'Sign In' : 'Create Account'}
                 </button>
@@ -219,7 +219,7 @@ const LoginPage = () => {
 
             {/* Footer */}
             <div className='text-center mt-6'>
-              <p className='text-gray-400 text-sm'>
+              <p className='text-gray-400 text-fluid-sm'>
                 {isLogin ? "Don't have an account? " : "Already have an account? "}
                 <button
                   onClick={() => setIsLogin(!isLogin)}

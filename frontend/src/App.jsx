@@ -30,31 +30,33 @@ const App = () => {
     <>
       {/* Animated Background */}
       <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading…</div>}>
-        <div className='inset-0 z-0 absolute'>
-          <Silk
-            key={location.pathname} //key is used to remount the component on route change
-            speed={2.2}
-            scale={1}
-            color={currentColor}
-            noiseIntensity={1.0}
-            rotation={0.0}
-          />
-        </div>
+        <div className='relative min-h-[100dvh] overflow-hidden'>
+          <div className='inset-0 z-0 absolute'>
+            <Silk
+              key={location.pathname} //key is used to remount the component on route change
+              speed={2.2}
+              scale={1}
+              color={currentColor}
+              noiseIntensity={1.0}
+              rotation={0.0}
+            />
+          </div>
 
-        <div className='fixed top-2 left-2 z-50 text-white/20 text-sm font-mono pointer-events-none'>
-          the-AVC
-        </div>
+          <div className='fixed top-2 left-2 z-50 text-white/20 text-fluid-xs font-mono pointer-events-none'>
+            the-AVC
+          </div>
 
-        <Toaster />
-        <Routes>
-          <Route path='/' element={authUser ? <HomePage /> : <Navigate to="/login" />} />
-          <Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
-          <Route path='/profile' element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
-          <Route path='/*' element={authUser ? <Navigate to="/" /> : <Navigate to="/login" />} />
-        </Routes>
+          <Toaster />
+          <Routes>
+            <Route path='/' element={authUser ? <HomePage /> : <Navigate to="/login" />} />
+            <Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
+            <Route path='/profile' element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+            <Route path='/*' element={authUser ? <Navigate to="/" /> : <Navigate to="/login" />} />
+          </Routes>
 
-        <div className='absolute bottom-2 font-mono right-4 text-white/25 text-xs pointer-events-none'>
-          © 2025 Chatspace v3.1 All rights reserved.
+          <div className='absolute bottom-2 font-mono right-4 text-white/25 text-fluid-xs pointer-events-none'>
+            © 2025 Chatspace v3.1 All rights reserved.
+          </div>
         </div>
       </Suspense>
     </>
